@@ -1,7 +1,7 @@
 #!/usr/bin/perl -w
 use strict;
 
-our $VERSION = sprintf("%d.%03d", '$Name: v0_013-2004-06-30 $' =~ /(\d+)_(\d+)/,0,0);
+our $VERSION = sprintf("%d.%03d", '$Name: v0_014-2004-07-06 $' =~ /(\d+)_(\d+)/,0,0);
 
 
 warn <<GPL unless -f 'Makefile';
@@ -78,6 +78,7 @@ WriteMakefile(
 	'Audio::Data' => 1.000,
 	'Graph::Directed' => 0,
 	'Scalar::Util' => 0, 
+	'Data::Uniqid' => 0,
     }, # e.g., Module::Name => 1.i
     
     ($] >= 5.005 ?    ## Add these new keywords supported since 5.005

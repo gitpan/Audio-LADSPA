@@ -22,7 +22,7 @@
 package Audio::LADSPA::Buffer;
 use strict;
 use base qw(DynaLoader);
-our $VERSION = sprintf("%d.%03d", '$Name: v0_013-2004-06-30 $' =~ /(\d+)_(\d+)/,0,0);
+our $VERSION = sprintf("%d.%03d", '$Name: v0_014-2004-07-06 $' =~ /(\d+)_(\d+)/,0,0);
 use Carp qw(croak);
 
 sub get_words {
@@ -80,13 +80,6 @@ sub get {
     else {
 	return $self->get_1();
     }
-}
-
-sub sessionid {
-    my ($self) = @_;
-    croak "Cannot request sessionid on non-object" unless ref($self);
-    my ($id) = ("$self" =~ /=\w*\((0x[a-f0-9]+)\)$/i); # get object reference
-    return $id;
 }
 
 __PACKAGE__->bootstrap($VERSION);

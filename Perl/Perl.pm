@@ -22,7 +22,7 @@ use strict;
 use Audio::LADSPA;
 use Audio::LADSPA::Library;
 our @ISA = qw(Audio::LADSPA::Plugin);
-our $VERSION = sprintf("%d.%03d", '$Name: v0_013-2004-06-30 $' =~ /(\d+)_(\d+)/,0,0);
+our $VERSION = sprintf("%d.%03d", '$Name: v0_014-2004-07-06 $' =~ /(\d+)_(\d+)/,0,0);
 use Carp;
 use Scalar::Util qw(weaken);
 
@@ -112,12 +112,14 @@ sub port2index {
 }
 
 sub new {
-    my ($class, $sample_rate)  = @_;
+    my ($class, $sample_rate, $uid)  = @_;
     if ($class eq 'Audio::LADSPA::Plugin::Perl') {
 	croak "Audio::LADSPA::Plugin::Perl is an abstract class and cannot be instantiated!";
     }
+    $uid ||= $class->generate_uniqid;
     my $self = bless {
 	sample_rate => $sample_rate,
+	uniqid => $uid,
     },$class;
     $self->init();
     return $self;
@@ -138,7 +140,14 @@ sub has_deactivate {
 sub has_run_adding {
     return $_[0]->can('run_adding');
 }
-    
+
+sub set_uniqid {
+    $_[0]->{uniqid} = $_[1];
+}
+
+sub get_uniqid {
+    $_[0]->{uniqid};
+}
 
 
 

@@ -1,5 +1,5 @@
 # Audio::LADSPA perl modules for interfacing with LADSPA plugins
-# Copyright (C) 2003  Joost Diepenmaat.
+# Copyright (C) 2003 - 2004 Joost Diepenmaat.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -21,7 +21,7 @@
 
 =head1 NAME
 
-Audio::LADSPA::Plugin - Use ladpsa plugins from perl
+Audio::LADSPA::Plugin - Base class for LADSPA plugins in Perl.
 
 =head1 SYNOPSIS
 
@@ -43,8 +43,9 @@ Audio::LADSPA::LibraryLoader module.
 You can use the Audio::LADSPA::Plugin classes to query the capabilities of the loaded plugin, and
 you can instantiate new objects from them to do some actual audio processing.
 
-A list of all available classnames on your system can be retrieved from C<< Audio::LADSPA->plugins() >>, or you can
-get one by label and / or id via C<< Audio::LADSPA->plugin( %ARGS ) >>.
+A list of all available classnames on your system can be retrieved from 
+C<< Audio::LADSPA->plugins() >>, or you can get one by label and / or id via 
+C<< Audio::LADSPA->plugin( %ARGS ) >>.
 
 =head1 Plugin Information
 
@@ -164,7 +165,7 @@ Gives the index of $port.
 =head1 Per port information
 
 These methods all take a $port argument, that can be the port's index (an integer)
-or the port name.
+or the port name. These methods can be called as class methods and object methods.
 
 =head2 is_input
 
@@ -258,13 +259,22 @@ port, round it yourself.
 
 =head2 new
 
- my $plugin_object = $plugin_class->new($sample_rate);
+ my $plugin_object = $plugin_class->new($sample_rate, $uniqid);
 
  # now do something interesting involving audio
 
-Create a new plugin object of $plugin_class and set its sample rate to $sample_rate. Usually you will want
-to set all connected plugins to the same sample rate. Audio::LADSPA::Network objects
-will do this automatically for you.
+Create a new plugin object of $plugin_class with uniqid $uniqid
+and set its sample rate to $sample_rate. 
+
+If $uniqid is not specified or C<false> a new uniqid will be generated via Data::Uniqid::luniqid()
+which should ensure that the id is always unique over multiple machines
+and time.
+
+Usually you will want to set all connected plugins to the same sample rate. 
+Audio::LADSPA::Network objects will do this automatically for you.
+
+See also L<Audio::LADSPA::Network/add_plugin>, L<Audio::LADSPA::Network/dump>
+and L<Data::Uniqid>.
 
 =head1 Connecting plugins
 
@@ -276,7 +286,8 @@ The following methods involve connections to buffers, handling audio data etc.
 
 Connects the $port to the Audio::LADSPA::Buffer $buffer. Returns true on success,
 false otherwise. Does B<not> check for loops in the resulting connections or
-conflicting sample rates between plugins. It's probably easer to use L<<<< $network->connect()|Audio::LADSPA::Network/connect >> instead >>>>. B<Do not use this method if
+conflicting sample rates between plugins. It's probably easer to use
+L<<$network->connect()>> instead. B<Do not use this method if
 the plugin already is part of an Audio::LADSPA::Network>
 
 See also  L<Audio::LADSPA::Network/connect> and L<cb_connect>.
@@ -308,10 +319,10 @@ Returns the buffer connected to the specified port. Returns C<undef> if not conn
  $drum->set( Velocity => 10 );
  $echo->set( Input    => 1, 1, 0, 0, -1, -1, 0, 0 );
 
-Set the Audio::LADSPA::Buffer connected to the $port. Note that if the $port if
+Set the Audio::LADSPA::Buffer connected to the $port. Note that if the $port is
 an output port, you will probably influence another plugin than this one.
 
-This is a shortcut for C<<$plugin->get_buffer($port)->set()>>.
+This is a shortcut for C<<$plugin->get_buffer($port)->set( @values )>>.
 
 See L<Audio::LADSPA::Buffer/set>.
 
@@ -328,6 +339,12 @@ Get the data from the Audio::LADSPA::Buffer connected to the $port.
 A shortcut for C<<$plugin->get_buffer($port)->get()>>
 
 See L<Audio::LADSPA::Buffer/get>.
+
+=head2 get_uniqid
+
+ my $uid = $plugin->get_uniqid();
+
+Returns the uniqid for this plugin instance. See also L</new>.
 
 =head1 Running the plugin
 
@@ -379,7 +396,7 @@ methods are called on the plugin.
 Note that the monitor object should be kept in scope by the container; the reference counting
 for the $monitor object is NOT increased by calling C<< $plugin->set_monitor($monitor) >>. 
 This is intentional; it allows the container to be the monitor, while still being DESTROYED 
-when going out of scope (this means you don't have to worry about this when the container is 
+when going out of scope (this means you don't have to worry when the container is 
 the monitor; the Perl garbage collector will work as you would expect it to). See 
 L<Audio::LADSPA::Network> for a (as of yet buggy) implementation.
 

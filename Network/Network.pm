@@ -1,5 +1,5 @@
 # Audio::LADSPA perl modules for interfacing with LADSPA plugins
-# Copyright (C) 2003  Joost Diepenmaat.
+# Copyright (C) 2003 - 2004 Joost Diepenmaat.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -19,7 +19,7 @@
 
 package Audio::LADSPA::Network;
 use strict;
-our $VERSION = sprintf("%d.%03d", '$Name: v0_013-2004-06-30 $' =~ /(\d+)_(\d+)/,0,0);
+our $VERSION = sprintf("%d.%03d", '$Name: v0_014-2004-07-06 $' =~ /(\d+)_(\d+)/,0,0);
 use Audio::LADSPA;
 use Graph::Directed;
 use Carp;
@@ -31,6 +31,7 @@ sub new {
 	sample_rate => $args{sample_rate} || 44100,
 	buffer_size => $args{buffer_size} || 1024, 
 	run_order => undef, 
+	plugin_by_uniqid => {},
 	%args,
     },$class;
     return $self;
@@ -45,7 +46,7 @@ sub _make_plugin {
     my $self = shift;
     my $plugin;
     if (@_ == 1) {
-	$plugin = shift; 
+	$plugin = shift;
         unless (ref ($plugin)) {
 	    $plugin = $plugin->new($self->{sample_rate});
 	}
@@ -67,8 +68,9 @@ sub add_plugin {
     $self->graph->add_vertex($plugin);
     $self->graph->set_attribute('plugin',$plugin,$plugin);
     for ($plugin->ports()) {
-	$self->_connect_default($plugin,$_);
+	$self->_connect_default($plugin,$_) unless $plugin->get_buffer($_);
     }
+    $self->{plugin_by_uniqid}->{$plugin->get_uniqid} = $plugin;
     return $plugin; 
 }
 
@@ -130,10 +132,12 @@ sub DESTROY {
        $_->disconnect_all();
     }
 
+    $self->{plugin_by_uniqid} = {};
+    $self->{run_order} = undef;
+    
     # this is not really needed, but it make for a nice place
     # for things to break down, if I mix up the reference counts again.
     delete $self->{graph};
-    $self->{run_order} = undef;
 }
 
 sub run {
@@ -286,7 +290,8 @@ sub delete {
     my ($self,$plugin) = @_;
     $self->graph->delete_vertex($plugin);
     $plugin->disconnect_all();
-}    
+    delete $self->{plugin_by_uniqid}->{$plugin->get_uniqid};
+}
 
 sub dump {
     my ($self) = @_;
@@ -304,7 +309,7 @@ sub dump_plugin {
     my $dump = {
 	Class => ref($plug),
 	Ports => [],
-	Id => $plug->sessionid,
+	Id => $plug->get_uniqid,
     };
     for ($plug->ports) {
 	my $port_dump = {
@@ -318,7 +323,7 @@ sub dump_plugin {
 	    $port_dump->{Connections} = [];
 	    while (my ($plug2,$port2) = splice(@connections,0,2)) {
 		push @{$port_dump->{Connections}}, { 
-		    Id => $plug2->sessionid, 
+		    Id => $plug2->get_uniqid, 
 		    Port => $port2 };
 	    }
 	}
@@ -348,8 +353,13 @@ sub from_dump {
     my %plug_by_id;
     for my $plugin_dump (reverse @{$dump->{Plugins}}) {
 	
-	my $plugin = $self->add_plugin($plugin_dump->{Class});
+	my $plugin = $self->add_plugin(
+	    $plugin_dump->{Class}->new(
+		$self->{sample_rate}, $plugin_dump->{Id}
+	    )
+	);
 	$plug_by_id{$plugin_dump->{Id}} = $plugin;
+	
 	
 	for my $port_dump (@{$plugin_dump->{Ports}}) {
 	    for my $remote (@{$port_dump->{Connections}}) {
@@ -364,6 +374,11 @@ sub from_dump {
 	}
     }
     return $self;
+}
+
+sub plugin_by_uniqid {
+    my ($self,$uid) = @_;
+    return $self->{plugin_by_uniqid}->{$uid};
 }
 
 
@@ -410,7 +425,7 @@ This module makes it easier to create connecting Audio::LADSPA::Plugin
 objects. It automatically keeps the sampling frequencies correct for all plugins,
 adds control and audio buffers to unconnected plugins, detects illegal connections etc.
 
-=head1 CLASS METHODS
+=head1 CONSTRUCTOR
 
 =head2 new
 
@@ -422,7 +437,7 @@ adds control and audio buffers to unconnected plugins, detects illegal connectio
 Construct a new Audio::LADSPA::Network. The sample_rate and buffer_size arguments may be omitted.
 The default sample_rate is 44100, the default buffer_size is 1024.
 
-=head1 OBJECT METHODS
+=head1 COMMON METHODS
 
 =head2 add_plugin
 
@@ -459,11 +474,56 @@ in the @plugins list.
 Because the topological sorting is expensive (that is, for semi-realtime audio generation),
 the result of this operation is cached as long as the network does not change.
 
+=head2 connect
+
+ unless ($network->connect( $plugin1, $port1, $plugin2, $port2 )) {
+     warn "Connection failed";
+ }
+
+Connect $port1 of $plugin1 with $port2 of $plugin2. Plugins are
+added to the network and new buffers are created if needed.
+
+This method will only connect input ports to output ports. If the output
+port is a control port, the input port must be a control port, if the
+output port is an audio port, the type of input port does not matter.
+The order in which the plugins are specified does not matter.
+
+I<There is currently no special handling of incompatible value ranges. 
+Well behaved plugins should accept any value on any port, even if they specify a
+range. Note that generic 0dB audio signals should be in the range -1 .. 1,
+but that control signals usually have completely different ranges.>
+
+Returns true on success, false on failure.
+
+B<< You are advised to use this method instead of $plugin->connect( $buffer ) >>.
+I<Some> of the magic in this method also works for C<< $plugin->connect() >>, if the
+plugin is already added to the network, but that might change if the implementation
+changes. YMMV. 
+
+=head2 run
+
+ $network->run( $number_of_samples );
+
+Call $plugin->run( $number_of_samples ) on all plugins in the $network.
+Throws an exception when $number_of_samples is higher than the $buffer_size
+specified at the L<constructor|CONSTRUCTOR>.
+
+=head2 disconnect
+
+ $network->disconnect($plugin,$port);
+
+Will disconnect the specified port from any buffer, and put
+a "dummy" buffer in its place. This means that you can still call
+run() the plugin after disconnecting. See also $network->delete().
+
 =head2 delete
 
  $network->delete($plugin);
 
-Delete a plugin from the network
+Completely remove the plugin from the network. This will also disconnect
+the plugin from all buffers that it currently holds. 
+
+=head1 ADDITIONAL METHODS
 
 =head2 add_buffer
 
@@ -491,47 +551,6 @@ Returns true if the $buffer is already in the $network.
 
 Returns all the $buffers in the $network.
 
-=head2 connect
-
- unless ($network->connect( $plugin1, $port1, $plugin2, $port2 )) {
-     warn "Connection failed";
- }
-
-Connect $port1 of $plugin1 with $port2 of $plugin2. Plugins are
-added to the network and new buffers are created if needed.
-
-This method will only connect input ports to output ports. If the output
-port is a control port, the input port must be a control port, if the
-output port is an audio port, the type of input port does not matter.
-The order in which the plugins are specified does not matter.
-
-I<There is currently no special handling of incompatible value ranges. 
-Well behaved plugins should accept any value on any port, even if they specify a
-range. Note that generic 0dB audio signals should be in the range -1 .. 1,
-but that control signals usually have completely different ranges.>
-
-Returns true on success, false on failure.
-
-B<< You are advised to use this method instead of $plugin->connect( $buffer ) >>.
-I<Some> of the magic in this method also works for C<< $plugin->connect() >>, if the
-plugin is already added to the network, but that might change if the implementation
-changes. YMMV. 
-
-=head2 disconnect
-
- $network->disconnect($plugin,$port);
-
-Will disconnect the specified port from any buffer, and put
-a "dummy" buffer in its place. This means that you can still call
-run() the plugin after disconnecting. See also $network->delete().
-
-=head2 delete
-
- $network->delete($plugin);
-
-Completely remove the plugin from the network. This will also disconnect
-the plugin from all buffers that it currently holds. 
-
 =head2 connections
 
  my @connections = $network->connections($plugin,$port);
@@ -543,13 +562,12 @@ supported, and the rules on connection an output port to more than one input
 port are not fixed yet, but keep in mind that this method MAY return more
 than one plugin/port pair.
 
-=head2 run
+=head2 plugin_by_uniqid
 
- $network->run( $number_of_samples );
+ my $plugin = $network->plugin_by_uniqid($uid);
 
-Call $plugin->run( $number_of_samples ) on all plugins in the $network.
-Throws an exception when $number_of_samples is higher than the $buffer_size
-specified at the L<constructor|CONSTRUCTOR>.
+Returns the $plugin with uniqid $uid from $network, or false if there isn't one.
+See also L<Audio::LADSPA::Plugin/get_uniqid>.
 
 =head1 SERIALIZATION
 
@@ -574,13 +592,16 @@ nice, readable files, but other dumpers should work>.
 Creates new network based on the $dump. If used as on object method (ie, called
 on an existing $network), it tries to import the network into the existing one.
 
+If a network is loaded from a dump, the plugins uniqids are restored from
+the dump.
+
 =head1 SEE ALSO
 
 L<Audio::LADSPA>, L<Graph::Base>
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright (C) 2003 Joost Diepenmaat <joost AT hortus-mechanicus.net>
+Copyright (C) 2003 - 2004 Joost Diepenmaat <joost AT hortus-mechanicus.net>
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

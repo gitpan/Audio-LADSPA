@@ -33,7 +33,7 @@ typedef struct audio_ladspa_plugin_s {
     int active;
     int ready;
     SV* monitor;
-    
+    SV* uniqid;
 } Audio_LADSPA_Plugin_t;
 
 typedef Audio_LADSPA_Plugin_t * Audio_LADSPA_Plugin;

@@ -1,7 +1,7 @@
 #!/usr/bin/perl -w
 use strict;
 
-use Test::More tests => 7;
+use Test::More tests => 6;
 use Audio::LADSPA;
 
 use strict;
@@ -17,15 +17,11 @@ my $objectref2 = $object;
 
 is("$object", "$objectref2","Object copies have same stringification");
 
-is($object->sessionid,$objectref2->sessionid,"Object copies have same sessionids");
+is($object->get_uniqid,$objectref2->get_uniqid,"Object copies have same uniqids");
 
 $objectref2 = $plug->new(44100);
 
 ok("$object" ne "$objectref2","Different objects have different stringification");
 
-ok($object->sessionid =~ /^0x[a-f0-9]+$/,"Session id format");
-
-
-
-ok($object->sessionid ne $objectref2->sessionid,"Session ids differ for different objects");
+ok($object->get_uniqid ne $objectref2->get_uniqid,"Session ids differ for different objects");
 

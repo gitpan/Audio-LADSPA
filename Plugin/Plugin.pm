@@ -19,9 +19,10 @@
 
 package Audio::LADSPA::Plugin;
 use strict;
-our $VERSION = sprintf("%d.%03d", '$Name: v0_013-2004-06-30 $' =~ /(\d+)_(\d+)/,0,0);
+our $VERSION = sprintf("%d.%03d", '$Name: v0_014-2004-07-06 $' =~ /(\d+)_(\d+)/,0,0);
 use Carp;
 use constant ABOVE_ZERO => 0.00000000000000000000000000000000000000000000000000000001;
+use Data::Uniqid qw();
 
 sub ports {
     my $self = shift;
@@ -128,11 +129,9 @@ sub callback {
     return 1;
 }
 
-sub sessionid {
-    my ($self) = @_;
-    croak "Cannot request sessionid on non-object" unless ref $self;
-    my ($id) = ("$self" =~ /=\w*\((0x[a-f0-9]+)\)$/is); # get object reference
-    return $id;
+sub generate_uniqid {
+    my ($self) = shift;
+    return Data::Uniqid::luniqid;
 }
 
 

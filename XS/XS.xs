@@ -85,7 +85,7 @@ LADSPA_Descriptor* my_descriptor(SV* self) {
     scalar ref
 */
 
-SV* new(SV* package, unsigned long sample_rate) {
+SV* new_with_uid(SV* package, unsigned long sample_rate, SV* uid) {
     Audio_LADSPA_Plugin plugin = NULL;
     SV* self;
     SV* ref;
@@ -99,6 +99,7 @@ SV* new(SV* package, unsigned long sample_rate) {
     plugin->handle = handle;
     plugin->descriptor = descriptor;
     plugin->monitor = &PL_sv_undef;
+    plugin->uniqid = newSVsv(uid);
     Newz(0,plugin->buffers,descriptor->PortCount,SV*);	/* reserve space for buffer sv's - one for each port */
     self = newSViv(PTR2IV(plugin));
     ref = sv_bless(newRV_noinc(self),gv_stashsv(package,0));
@@ -246,9 +247,10 @@ PROTOTYPES: DISABLE
 
 
 SV*
-new(package,sample_rate)
+new_with_uid(package,sample_rate, uid)
     SV* package 
     unsigned long sample_rate
+    SV* uid
 
 
 void
@@ -628,3 +630,20 @@ port2index( self, port )
     OUTPUT:
     RETVAL
 
+
+void
+set_uniqid( self, uid )
+    Audio_LADSPA_Plugin self
+    SV* uid
+    CODE:
+    self->uniqid = newSVsv(uid);
+
+SV*
+get_uniqid( self )
+    Audio_LADSPA_Plugin self
+    CODE:
+    RETVAL = newSVsv(self->uniqid);
+    OUTPUT:
+    RETVAL
+
+    

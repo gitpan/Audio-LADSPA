@@ -24,7 +24,7 @@ use Audio::LADSPA::Buffer;
 use 5.006;
 use Carp;
 
-our $VERSION = sprintf("%d.%03d", '$Name: v0_013-2004-06-30 $' =~ /(\d+)_(\d+)/,0,0);
+our $VERSION = sprintf("%d.%03d", '$Name: v0_014-2004-07-06 $' =~ /(\d+)_(\d+)/,0,0);
 
 our @LIBRARIES;	    # will store the list of found libraries as Perl class names
 our @PLUGINS;	    # will store the names of all loaded plugins as Perl class names
@@ -87,7 +87,7 @@ __END__
 
 =head1 NAME
 
-Audio::LADSPA - Perl extension for processing audio streams using LADSPA plugins.
+Audio::LADSPA - Modular audio processing using LADSPA plugins. Implements a LADSPA 1.1 host.
 
 =head1 SYNOPSIS
 
@@ -100,15 +100,28 @@ Audio::LADSPA - Perl extension for processing audio streams using LADSPA plugins
 
 =head1 DESCRIPTION
 
-This module starts up a LADSPA 1.1 host environment as a perl extension
-you can use it to query LADSPA plugins, and to apply plugins to
-audio streams. 
+LADSPA plugins are objects in shared libraries that can generate or transform audio
+signals (like VST or Direct-X plugins on Mac and Win32 systems). Most of the existing
+LADSPA plugins are pretty low-level compared to VST plugins (you get seperate
+oscilator, ADSR and delay plugins instead of "complete" virtual synthesizers etc). 
+See also http://www.ladspa.org/
+
+With these modules you can create a LADSPA host, which can load the plugins,
+query their capabilities, connect them together in a network, and run audio
+streams through them.
+
+The LADSPA API was developed for linux but should be platform independent, so you
+might be able to compile these modules and the nessisary plugins on win32 systems
+(please let me know if it works or not).
 
 =head1 USER GUIDE
 
 This is the reference documentation.  If you want a general 
 overview/introduction on this set of modules, take a look at 
-L<Audio::LADSPA::UserGuide>. 
+L<Audio::LADSPA::UserGuide> (not finished).
+
+Reading L<Audio::LADSPA::Plugin> and L<Audio::LADSPA::Network> is
+recommended.
 
 =head1 STARTUP
 
@@ -191,22 +204,22 @@ or more plugins
 
 L<Audio::LADSPA::Plugin> - Base class for ladspa plugins 
 
+L<Audio::LADSPA::Network> - a set of connected plugins and buffers
+
+L<Audio::LADSPA::Plugin::Play> - output audio to soundcard.
+
+L<Audio::LADSPA::Plugin::Sequencer4> - a simple 4-step sequencer.
+
 L<Audio::LADSPA::Plugin::XS> - Base class real (compiled) ladspa plugins
 
-L<Audio::LADSPA::Plugin::Perl> - Base class for perl-based ladspa
+L<Audio::LADSPA::Plugin::Perl> - Base class for perl-only ladspa
 plugins.
 
 L<Audio::LADSPA::Buffer> - audio/data buffer that can be used to control
 a plugin or to connect plugins together
 
-L<Audio::LADSPA::Network> - a set of connected plugins and buffers
-
 L<Audio::LADSPA::LibraryLoader> - loads ladspa shared libraries (.so files) into
 Audio::LADSPA::Library classes
-
-L<Audio::LADSPA::Plugin::Play> - output audio to soundcard.
-
-L<Audio::LADSPA::Plugin::Sequencer4> - a simple 4-step sequencer.
 
 =head2 Links
 

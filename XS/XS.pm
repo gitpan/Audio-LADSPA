@@ -20,10 +20,16 @@
 package Audio::LADSPA::Plugin::XS;
 use strict;
 use base qw(DynaLoader Audio::LADSPA::Plugin);
-our $VERSION = sprintf("%d.%03d", '$Name: v0_013-2004-06-30 $' =~ /(\d+)_(\d+)/,0,0);
+our $VERSION = sprintf("%d.%03d", '$Name: v0_014-2004-07-06 $' =~ /(\d+)_(\d+)/,0,0);
 use Carp;
 
 __PACKAGE__->bootstrap($VERSION);
+
+sub new {
+    my ($class,$rate,$uid) = @_;
+    $uid ||= $class->generate_uniqid;
+    $class->new_with_uid($rate,$uid);
+}
 
 
 1;

@@ -1,3 +1,9 @@
+0.014 -
+ * Network now checks wether added plugins are already connected
+   (the documentation already claimed that it did)
+ * *_uniqid methods added (requires Data::Uniqid)
+ * Some documentation additions
+
 0.013 -
  * Changes to the Audio::LADSPA documentation
  * Audio::LADSPA->plugins now also returns any loaded
