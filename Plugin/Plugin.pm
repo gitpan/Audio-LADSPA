@@ -19,8 +19,9 @@
 
 package Audio::LADSPA::Plugin;
 use strict;
-our $VERSION = sprintf("%d.%03d", '$Name: v0_010-2004-06-28 $' =~ /(\d+)_(\d+)/,0,0);
+our $VERSION = sprintf("%d.%03d", '$Name: v0_013-2004-06-30 $' =~ /(\d+)_(\d+)/,0,0);
 use Carp;
+use constant ABOVE_ZERO => 0.00000000000000000000000000000000000000000000000000000001;
 
 sub ports {
     my $self = shift;
@@ -69,15 +70,15 @@ sub default_value {
 	    return $lower;
 	}
 	if ($_ eq 'low') {
-	    return exp(log($lower) * 0.75 + log($upper) * 0.25) if $log;
+	    return exp(log($lower || ABOVE_ZERO) * 0.75 + log($upper || ABOVE_ZERO) * 0.25) if $log;
 	    return ($lower * 0.75 + $upper * 0.25); 
 	}
 	if ($_ eq 'middle') {
-	    return exp(log($lower) * 0.5 + log($upper) * 0.5) if $log;
+	    return exp(log($lower || ABOVE_ZERO) * 0.5 + log($upper || ABOVE_ZERO) * 0.5) if $log;
 	    return ($lower * 0.5 + $upper * 0.5); 
 	}
 	if ($_ eq 'high') {
-	    return exp(log($lower) * 0.25 + log($upper) * 0.75) if $log;
+	    return exp(log($lower || ABOVE_ZERO) * 0.25 + log($upper || ABOVE_ZERO) * 0.75) if $log;
 	    return ($lower * 0.25 + $upper * 0.75); 
 	}
 	if ($_ eq 'maximum') {
@@ -125,6 +126,13 @@ sub callback {
 	}
     }
     return 1;
+}
+
+sub sessionid {
+    my ($self) = @_;
+    croak "Cannot request sessionid on non-object" unless ref $self;
+    my ($id) = ("$self" =~ /=\w*\((0x[a-f0-9]+)\)$/is); # get object reference
+    return $id;
 }
 
 

@@ -52,15 +52,15 @@ Audio_LADSPA_Buffer AL_Buffer_from_sv( SV* sv ) {
 
 
 void set_1(Audio_LADSPA_Buffer buffer, LADSPA_Data value) {
-    if (buffer->size != 1) croak("Buffer size != 1");
+/*    if (buffer->size != 1) croak("Buffer size != 1"); */
     *(buffer->data) = (LADSPA_Data) value;
     buffer->filled = 1;
 }
 
 SV* get_1(Audio_LADSPA_Buffer buffer) {
-    if (buffer->size != 1) {
+/*    if (buffer->size != 1) {
 	croak("Buffer size != 1");
-    }
+    } */
     if (buffer->filled > 0) {
 	return newSVnv((NV) buffer->data[0]);
     }
@@ -198,4 +198,10 @@ SV* mult(self, val, order)
     LADSPA_Data val
     SV*	order
 
-   
+unsigned long size(self)
+    Audio_LADSPA_Buffer self
+    CODE:
+    RETVAL = self->size;
+    OUTPUT:
+    RETVAL
+

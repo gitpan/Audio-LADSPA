@@ -24,7 +24,7 @@ use Audio::LADSPA::Buffer;
 use 5.006;
 use Carp;
 
-our $VERSION = sprintf("%d.%03d", '$Name: v0_010-2004-06-28 $' =~ /(\d+)_(\d+)/,0,0);
+our $VERSION = sprintf("%d.%03d", '$Name: v0_013-2004-06-30 $' =~ /(\d+)_(\d+)/,0,0);
 
 our @LIBRARIES;	    # will store the list of found libraries as Perl class names
 our @PLUGINS;	    # will store the names of all loaded plugins as Perl class names
@@ -53,7 +53,7 @@ sub libraries {
 }
 
 sub plugins {
-    @PLUGINS;
+    @PLUGINS,'Audio::LADSPA::Library::Perl'->plugins;
 }
 
 sub plugin {
@@ -184,10 +184,17 @@ L<Audio::LADSPA::UserGuide> - the user guide.
 
 L<pluginfo> - query ladspa plugins.
 
-L<Audio::LADSPA::Library> - a libraries containing one
+L<Audio::LADSPA> - this module.
+
+L<Audio::LADSPA::Library> - libraries containing one
 or more plugins
 
-L<Audio::LADSPA::Plugin> - the actual ladspa plugins 
+L<Audio::LADSPA::Plugin> - Base class for ladspa plugins 
+
+L<Audio::LADSPA::Plugin::XS> - Base class real (compiled) ladspa plugins
+
+L<Audio::LADSPA::Plugin::Perl> - Base class for perl-based ladspa
+plugins.
 
 L<Audio::LADSPA::Buffer> - audio/data buffer that can be used to control
 a plugin or to connect plugins together
@@ -196,6 +203,10 @@ L<Audio::LADSPA::Network> - a set of connected plugins and buffers
 
 L<Audio::LADSPA::LibraryLoader> - loads ladspa shared libraries (.so files) into
 Audio::LADSPA::Library classes
+
+L<Audio::LADSPA::Plugin::Play> - output audio to soundcard.
+
+L<Audio::LADSPA::Plugin::Sequencer4> - a simple 4-step sequencer.
 
 =head2 Links
 
@@ -215,7 +226,7 @@ http://www.hortus-mechanicus.net/perl/
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright (C) 2003 Joost Diepenmaat <joost AT hortus-mechanicus.net>
+Copyright (C) 2003 - 2004 Joost Diepenmaat <joost AT hortus-mechanicus.net>
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

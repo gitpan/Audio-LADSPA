@@ -1,8 +1,27 @@
+0.013 -
+ * Changes to the Audio::LADSPA documentation
+ * Audio::LADSPA->plugins now also returns any loaded
+   perl-based ladspa plugins
+
+0.012 -
+ * Fixed bug in Network code that would trip up Network->disconnect
+   2 times out of 3
+
+0.011 -
+ * added port2index method to plugins
+ * added connections method to Network
+ * added delete method to Network
+ * allowing connections from audio port to control port
+ * added documentation for all the port information methods,
+   slight other improvements to the documentation for
+   Audio::LADSPA::Plugin
+ * added Audio::LADSPA::Plugin::Sequencer4
+
 0.010 -
  * Oops: added Scalar::Util to the prerequisites in the top-level 
    Makefile.PL
  * Now tested with gcc-2.95.4 20011002 (Debian prerelease)
-   this seems to catch the C-99 incompatibilities.
+   this seems to catch the non-C'99 incompatibilities.
  * Documentation fixes (mainly typos)
 
 0.009 -

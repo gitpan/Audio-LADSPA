@@ -224,7 +224,7 @@ unsigned long port_index(LADSPA_Descriptor* descriptor, SV* buffer) {
 			return i;
 		    }
 		}
-		croak("Port %% not found", buffer);
+		croak("Port %_ not found", buffer);
 	    }
 	    i++;
 	}
@@ -615,6 +615,16 @@ monitor( self )
     Audio_LADSPA_Plugin self
     CODE:
     RETVAL = newSVsv(self->monitor);
+    OUTPUT:
+    RETVAL
+
+
+unsigned long
+port2index( self, port )
+    SV* self
+    SV* port
+    CODE:
+    RETVAL = port_index(my_descriptor(self), port);
     OUTPUT:
     RETVAL
 

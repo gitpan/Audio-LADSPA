@@ -104,8 +104,15 @@ if (@id) {
 }
 if (@package) {
     @plugins = @package;
+    for (@package) {
+	unless ($_->isa('Audio::LADSPA::Plugin')) {
+	    verbose("trying to load $_ as a perl module\n");
+	    eval "use $_;";
+	}
+    }
 }
 die "no matching plugins found\n" unless @plugins;
+
 
 verbose(scalar @plugins," plugins found in ",scalar @libraries," libraries\n");
 
@@ -117,6 +124,7 @@ push @plug_fields, qw(name maker copyright port_count is_realtime
 		    has_run_adding has_activate has_deactivate) unless $short;
 
 for my $lib ( sort @libraries ) {
+    verbose("library $lib\n");
     my $seen_lib = 0;
     for my $plug (@plugins) {
         if (grep { $_ eq $plug } $lib->plugins) {

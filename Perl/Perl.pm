@@ -19,14 +19,14 @@
 
 package Audio::LADSPA::Plugin::Perl;
 use strict;
-use Audio::LADSPA::Plugin;
+use Audio::LADSPA;
+use Audio::LADSPA::Library;
 our @ISA = qw(Audio::LADSPA::Plugin);
-our $VERSION = sprintf("%d.%03d", '$Name: v0_010-2004-06-28 $' =~ /(\d+)_(\d+)/,0,0);
+our $VERSION = sprintf("%d.%03d", '$Name: v0_013-2004-06-30 $' =~ /(\d+)_(\d+)/,0,0);
 use Carp;
 use Scalar::Util qw(weaken);
 
-sub description {
-    {
+__PACKAGE__->description(
 	name => 'Audio::LADSPA::Plugin::Perl',
 	label => 'perl',
 	maker => 'Joost Diepenmaat',
@@ -34,18 +34,38 @@ sub description {
 	id => '0',
 	ports => [
 	],
-    }
-}
+);
 
+sub description {
+    my ($class,%desc) = @_;
+    no strict 'refs';
+    for my $sub qw(id label name maker copyright is_realtime 
+		   is_hard_rt_capable is_inplace_broken) {
+	*{"${class}::$sub"} = sub {
+	    return $desc{$sub};
+	};
+    }
+    for my $sub qw(is_input is_control lower_bound upper_bound 
+		    is_toggled is_integer is_sample_rate is_logarithmic default) {
+	*{"${class}::$sub"} = sub {
+	    my ($self,$port) = @_;
+	    return $self->_portd($port)->{$sub};
+	};
+    }
+    *{"${class}::_description"} = sub {
+	return \%desc;
+    };
+    Audio::LADSPA::Library::Perl->register($class) unless $class eq __PACKAGE__;
+}
 
 sub port_count {
     my ($class) = @_;
-    return scalar @{$class->description->{ports}};
+    return scalar @{$class->_description->{ports}};
 }
 
 sub _portd {
     my ($class,$port) = @_;
-    return $class->description->{ports}->[ $class->port2index($port) ];
+    return $class->_description->{ports}->[ $class->port2index($port) ];
 }
 
 sub port_name {
@@ -83,15 +103,10 @@ sub port2index {
     my ($self,$name) = @_;
     croak "Port name/index undefined" unless defined $name;
     if ($name =~ /\D/) {
-	unless ($self->{portindex}) {
-	    for ( 0 .. $self->port_count -1 ) {
-		$self->{portindex}->{ $self->port_name($_) } = $_;
-	    }
+	for ( 0 .. $self->port_count -1 ) {
+	    return $_ if $self->port_name($_) eq $name;
 	}
-        croak "No such port $name" unless exists $self->{portindex}->{$name};
-	my $index = $self->{portindex}->{$name};
-#	warn "found index $index for name $name";
-	return $index; 
+        croak "No such port $name";
     }
     return $name;
 }
@@ -125,20 +140,7 @@ sub has_run_adding {
 }
     
 
-no strict 'refs';
-for my $sub qw(id label name maker copyright is_realtime is_hard_rt_capable is_inplace_broken) {
-    *{$sub} = sub {
-	my ($self) = @_;
-	return $self->description->{$sub};
-    };
-}
-for my $sub qw(is_input is_control lower_bound upper_bound is_toggled is_integer is_sample_rate 
-    is_logarithmic default) {
-    *{$sub} = sub {
-	my ($self,$port) = @_;
-	return $self->_portd($port)->{$sub};
-    };
-}
+
 
 1;
 
@@ -161,7 +163,7 @@ when the API is done.
 
 =head1 SEE ALSO
 
-L<Audio::LADSPA::Play> - an implementation of a Perl based ladspa plugin.
+L<Audio::LADSPA::Plugin::Play> - an implementation of a Perl based ladspa plugin.
 
 =head1 COPYRIGHT AND LICENSE
 

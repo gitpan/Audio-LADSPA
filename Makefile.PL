@@ -1,7 +1,7 @@
 #!/usr/bin/perl -w
 use strict;
 
-our $VERSION = sprintf("%d.%03d", '$Name: v0_010-2004-06-28 $' =~ /(\d+)_(\d+)/,0,0);
+our $VERSION = sprintf("%d.%03d", '$Name: v0_013-2004-06-30 $' =~ /(\d+)_(\d+)/,0,0);
 
 
 warn <<GPL unless -f 'Makefile';

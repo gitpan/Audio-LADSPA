@@ -53,4 +53,7 @@ t/41crashme.t
 t/99sound.t
 typemap
 
+Sequencer4/Makefile.PL
+Sequencer4/Sequencer4.pm
+t/42connections.t
 META.yml                                 Module meta-data (added by MakeMaker)

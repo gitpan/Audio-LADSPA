@@ -21,7 +21,7 @@
 
 package Audio::LADSPA::Library;
 use strict;
-our $VERSION = sprintf("%d.%03d", '$Name: v0_010-2004-06-28 $' =~ /(\d+)_(\d+)/,0,0);
+our $VERSION = sprintf("%d.%03d", '$Name: v0_013-2004-06-30 $' =~ /(\d+)_(\d+)/,0,0);
 no strict 'refs';
 
 sub plugins {
@@ -34,11 +34,16 @@ sub library_file {
 
 package Audio::LADSPA::Library::Perl;
 
-use Audio::LADSPA::Plugin::Play;
-
+my @plugins;
 sub plugins {
-    qw( Audio::LADSPA::Plugin::Play );
+    @plugins;
 }
+
+sub register {
+    my $dummy = shift;
+    push @plugins,@_;
+}
+
 
 sub library_file {
     qw( 'Audio::LADSPA::Library::Perl' );

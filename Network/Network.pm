@@ -19,7 +19,7 @@
 
 package Audio::LADSPA::Network;
 use strict;
-our $VERSION = sprintf("%d.%03d", '$Name: v0_010-2004-06-28 $' =~ /(\d+)_(\d+)/,0,0);
+our $VERSION = sprintf("%d.%03d", '$Name: v0_013-2004-06-30 $' =~ /(\d+)_(\d+)/,0,0);
 use Audio::LADSPA;
 use Graph::Directed;
 use Carp;
@@ -34,6 +34,11 @@ sub new {
 	%args,
     },$class;
     return $self;
+}
+
+sub sample_rate {
+    my $self = shift;
+    return $self->{sample_rate};
 }
 
 sub _make_plugin {
@@ -105,9 +110,9 @@ sub _connect_default {
     my ($self,$plugin,$port) = @_;
     croak "Logic error: port $port already connected" if ($plugin->get_buffer($port));
     my $buffer;
-    if ($plugin->is_control($_)) {
+    if ($plugin->is_control($port)) {
 	$buffer = $self->add_buffer(1);
-	$buffer->set($plugin->default_value($_));
+	$buffer->set($plugin->default_value($port));
     }
     else {
 	$buffer = $self->add_buffer($self->{buffer_size});
@@ -149,15 +154,26 @@ sub connect {
 	warn "Can only connect input to output";
 	return 0;
     }
-    if ($from_plug->is_control($from_port) xor $to_plug->is_control($to_port)) {
-	warn "Can not connect ports of differing types";
+    if ($from_plug->is_input($from_port)) {
+	($from_plug,$from_port,$to_plug,$to_port) = ($to_plug,$to_port,$from_plug,$from_port);
+    }
+    if ($from_plug->is_control($from_port) and ! $to_plug->is_control($to_port)) {
+	warn "Can not connect from control to audio port (you CAN do it the other way around)";
 	return 0;
     }
     for ($from_plug,$to_plug) {
 	$self->add_plugin($_) unless $self->has_plugin($_);
     }
+    # note that connecting the other way around will create
+    # problems when connecting an audio-out to crontrol-in port
     my $buffer = $from_plug->get_buffer($from_port);
     return $to_plug->connect($to_port => $buffer);
+}
+
+sub disconnect {
+    my ($self,$plug,$port) = @_;
+    $plug->disconnect($port);
+    $self->_connect_default($plug,$port);
 }
 
 sub cb_connect {
@@ -171,6 +187,8 @@ sub cb_connect {
     if (!$self->has_plugin($plug)) {
 	$self->add_plugin($plug);
     }
+
+    #   try out to see if we get cycles
     my $H = $self->graph->copy();
     if ($plug->is_input($port)) {
 	$H->add_edge($buffer,$plug);
@@ -182,11 +200,15 @@ sub cb_connect {
 	return 0;
     }
 
+    # fine, now for real
     if ($plug->is_input($port)) {
 	$self->graph->add_edge($buffer,$plug);
+	$self->graph->set_attribute("port",$buffer,$plug,$port);
     }
     else {
 	$self->graph->add_edge($plug,$buffer);
+	$self->graph->set_attribute("port",$plug,$buffer,$port);
+	
     }
     $self->{run_order} = undef;
     return 1;
@@ -246,6 +268,103 @@ sub reduce_to_cycles {
     return $G;
 }   
 
+
+sub connections {
+    my ($self,$plug,$port) = @_;
+    my $buffer = $plug->get_buffer($port) or croak "$plug has no buffer for port $port";
+    my @res;
+    for my $plug2 (grep {defined $_ and ( $_ ne $buffer && $_ ne $plug) } $self->graph->edges($buffer)) {
+	my $port2 =  $self->graph->get_attribute("port",$plug2,$buffer) || $self->graph->get_attribute("port",$buffer,$plug2);
+	die "no port found for edge $buffer <-> $plug2" unless $port2;
+	$plug2 = $self->graph->get_attribute("plugin",$plug2) or die "Can't find $plug2";
+	push @res,$plug2,$port2;
+    }
+    return @res;
+}
+
+sub delete {
+    my ($self,$plugin) = @_;
+    $self->graph->delete_vertex($plugin);
+    $plugin->disconnect_all();
+}    
+
+sub dump {
+    my ($self) = @_;
+    return {
+	'Audio::LADSPA::Network' => $VERSION,
+	'DumpVersion' => 0.01,
+	'Plugins' => [ map { $self->dump_plugin($_) } $self->plugins ],
+	'SampleRate' => $self->sample_rate,
+	'BufferSize' => $self->{buffer_size},
+    };
+}
+
+sub dump_plugin {
+    my ($self,$plug) = @_;
+    my $dump = {
+	Class => ref($plug),
+	Ports => [],
+	Id => $plug->sessionid,
+    };
+    for ($plug->ports) {
+	my $port_dump = {
+	    Name => $_,
+	};
+	if ($plug->is_control($_) && $plug->is_input($_)) {
+	    $port_dump->{Value} = $plug->get_buffer($_)->get_1;
+	}
+	unless ($plug->is_input($_)) {
+	    my @connections = $self->connections($plug,$_);
+	    $port_dump->{Connections} = [];
+	    while (my ($plug2,$port2) = splice(@connections,0,2)) {
+		push @{$port_dump->{Connections}}, { 
+		    Id => $plug2->sessionid, 
+		    Port => $port2 };
+	    }
+	}
+	push @{$dump->{Ports}},$port_dump;
+    }
+    return $dump;
+}
+
+sub from_dump {
+    my ($self,$dump) = @_;
+    croak "Not an Audio::LADSPA::Network dump" unless exists $dump->{'Audio::LADSPA::Network'};
+    croak "Incompatible dump version $dump->{Version} (must be < 1.0)" if $dump->{DumpVersion} >= 1.0;
+    if (ref $self) {
+	if ($self->sample_rate != $dump->{SampleRate}) {
+	    warn "SampleRate from dump differs from current sample rate";
+	}
+	if ($self->{buffer_size} != $dump->{BufferSize}) {
+	    warn "BufferSize from dump differs from current buffer size";
+	}
+    }
+    else {
+	$self = $self->new( 
+	    sample_rate => $dump->{SampleRate}, 
+	    buffer_size => $dump->{BufferSize}
+	) or croak "Cannot initialize new network";
+    }
+    my %plug_by_id;
+    for my $plugin_dump (reverse @{$dump->{Plugins}}) {
+	
+	my $plugin = $self->add_plugin($plugin_dump->{Class});
+	$plug_by_id{$plugin_dump->{Id}} = $plugin;
+	
+	for my $port_dump (@{$plugin_dump->{Ports}}) {
+	    for my $remote (@{$port_dump->{Connections}}) {
+		$self->connect(
+		    $plugin,
+		    $port_dump->{Name},
+		    $plug_by_id{$remote->{Id}},
+		    $remote->{Port}
+		) or croak "Cannot connect $plugin $port_dump->{Name} => $plug_by_id{$remote->{Id}} ($remote->{Id}) $remote->{Port}";
+	    }
+	    $plugin->set($port_dump->{Name},$port_dump->{Value}) if exists $port_dump->{Value};
+	}
+    }
+    return $self;
+}
 
 
 1;
@@ -340,6 +459,12 @@ in the @plugins list.
 Because the topological sorting is expensive (that is, for semi-realtime audio generation),
 the result of this operation is cached as long as the network does not change.
 
+=head2 delete
+
+ $network->delete($plugin);
+
+Delete a plugin from the network
+
 =head2 add_buffer
 
  my $buffer = $network->add_buffer( EXPR );
@@ -375,16 +500,48 @@ Returns all the $buffers in the $network.
 Connect $port1 of $plugin1 with $port2 of $plugin2. Plugins are
 added to the network and new buffers are created if needed.
 
-This method will only connect input ports to output ports, which
-must both be of the same type (audio or control). The order in
-which the plugins are specified does not matter.
+This method will only connect input ports to output ports. If the output
+port is a control port, the input port must be a control port, if the
+output port is an audio port, the type of input port does not matter.
+The order in which the plugins are specified does not matter.
+
+I<There is currently no special handling of incompatible value ranges. 
+Well behaved plugins should accept any value on any port, even if they specify a
+range. Note that generic 0dB audio signals should be in the range -1 .. 1,
+but that control signals usually have completely different ranges.>
 
 Returns true on success, false on failure.
 
 B<< You are advised to use this method instead of $plugin->connect( $buffer ) >>.
 I<Some> of the magic in this method also works for C<< $plugin->connect() >>, if the
 plugin is already added to the network, but that might change if the implementation
-changes. YMMV. $plugin->disconnect($port) works, and will stay working, though.
+changes. YMMV. 
+
+=head2 disconnect
+
+ $network->disconnect($plugin,$port);
+
+Will disconnect the specified port from any buffer, and put
+a "dummy" buffer in its place. This means that you can still call
+run() the plugin after disconnecting. See also $network->delete().
+
+=head2 delete
+
+ $network->delete($plugin);
+
+Completely remove the plugin from the network. This will also disconnect
+the plugin from all buffers that it currently holds. 
+
+=head2 connections
+
+ my @connections = $network->connections($plugin,$port);
+
+Returns a $remote_plug1, $remote_port1, $remote_plug2, $remote_port2 ... list
+of all the plugin/port combinations the $plugin's $port is connected to
+in this $network. Connecting an input port to more than 1 output port is not
+supported, and the rules on connection an output port to more than one input
+port are not fixed yet, but keep in mind that this method MAY return more
+than one plugin/port pair.
 
 =head2 run
 
@@ -394,7 +551,28 @@ Call $plugin->run( $number_of_samples ) on all plugins in the $network.
 Throws an exception when $number_of_samples is higher than the $buffer_size
 specified at the L<constructor|CONSTRUCTOR>.
 
+=head1 SERIALIZATION
 
+The internal structure of the network prevents easy serialisation (Data::Dumper
+and the like will not give you a dump that you can read back). To overcome this
+problem 2 methods have been added:
+
+=head2 dump
+
+ my $dump = $network->dump;
+
+Returns a serializable, nested structure that represents the whole network.
+You can use YAML or Data::Dumper or something similar to serialize the structure.
+
+I<YAML is the only serializer I tested this with, because it creates
+nice, readable files, but other dumpers should work>.
+
+=head2 from_dump
+
+ my $network = Audio::LADSPA::Network->from_dump($dump);
+ 
+Creates new network based on the $dump. If used as on object method (ie, called
+on an existing $network), it tries to import the network into the existing one.
 
 =head1 SEE ALSO
 
