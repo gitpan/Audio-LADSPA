@@ -21,7 +21,7 @@
 
 =head1 NAME
 
-Audio::LADPSA::Buffer
+Audio::LADSPA::Buffer
 
 =head1 SYNOPSIS
 

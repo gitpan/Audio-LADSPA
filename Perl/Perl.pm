@@ -21,7 +21,7 @@ package Audio::LADSPA::Plugin::Perl;
 use strict;
 use Audio::LADSPA::Plugin;
 our @ISA = qw(Audio::LADSPA::Plugin);
-our $VERSION = sprintf("%d.%03d", '$Name: v0_009-2004-01-02 $' =~ /(\d+)_(\d+)/,0,0);
+our $VERSION = sprintf("%d.%03d", '$Name: v0_010-2004-06-28 $' =~ /(\d+)_(\d+)/,0,0);
 use Carp;
 use Scalar::Util qw(weaken);
 
@@ -148,7 +148,7 @@ __END__
 
 =head1 NAME
 
-Audio::LADPSA::Plugin::Perl - Perl representation of ladspa plugins
+Audio::LADSPA::Plugin::Perl - Perl representation of ladspa plugins
 
 =head1 DESCRIPTION
 

@@ -21,13 +21,13 @@
 
 =head1 NAME
 
-Audio::LADPSA::Plugin - Use ladpsa plugins from perl
+Audio::LADSPA::Plugin - Use ladpsa plugins from perl
 
 =head1 SYNOPSIS
 
     use Audio::LADSPA;
 
-    my (@plugin_classes) = Audio::LADPSA->plugins();
+    my (@plugin_classes) = Audio::LADSPA->plugins();
     
     # or ...
     my $plugin_class = Audio::LADSPA->plugin( label => "delay_5s", id => 1043);
@@ -36,7 +36,7 @@ Audio::LADPSA::Plugin - Use ladpsa plugins from perl
 
 =head1 DESCRIPTION
 
-Audio::LADSPA::Plugin is a base class for LADSPA plugins. Default behaviour of the Audio::LADPSA 
+Audio::LADSPA::Plugin is a base class for LADSPA plugins. Default behaviour of the Audio::LADSPA 
 module is to generate a subclass for each plugin found in LADSPA_PATH, using the 
 Audio::LADSPA::LibraryLoader module.
 
@@ -174,7 +174,7 @@ Connects the $port to the Audio::LADSPA::Buffer $buffer. Returns true on success
 
 B<<<< If the $plugin is part of an Audio::LADSPA::Network, use L<< $network->connect()|Audio::LADSPA::Network/connect >> instead >>>>.
 
-See also  L<Audio::LADPSA::Network/connect> and L<cb_connect>.
+See also  L<Audio::LADSPA::Network/connect> and L<cb_connect>.
 
 =head2 disconnect
 
@@ -260,7 +260,7 @@ Please note that the monitor object should be kept in scope by the container; th
 for the $monitor object is NOT increased by calling C<< $plugin->set_monitor($monitor) >>. This is
 intentional; it allows the container to be the monitor, while still being DESTROYED when
 going out of scope (this means you don't have to worry about this when the container is the monitor;
-the Perl garbage collector will work as you would expect it to). See L<Audio::LASDPA::Network> for
+the Perl garbage collector will work as you would expect it to). See L<Audio::LADSPA::Network> for
 an implementation.
 
 =head2 set_monitor
@@ -300,7 +300,7 @@ Will be called when C<< $plugin->disconnect($port) >> is called.
 
 =head1 SEE ALSO
 
-L<Audio::LADSPA>, L<Audio::LASDPA::Plugin::XS>, L<Audio::LADSPA::Plugin::Perl>.
+L<Audio::LADSPA>, L<Audio::LADSPA::Plugin::XS>, L<Audio::LADSPA::Plugin::Perl>.
 
 =head1 COPYRIGHT AND LICENSE
 

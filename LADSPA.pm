@@ -24,7 +24,7 @@ use Audio::LADSPA::Buffer;
 use 5.006;
 use Carp;
 
-our $VERSION = sprintf("%d.%03d", '$Name: v0_009-2004-01-02 $' =~ /(\d+)_(\d+)/,0,0);
+our $VERSION = sprintf("%d.%03d", '$Name: v0_010-2004-06-28 $' =~ /(\d+)_(\d+)/,0,0);
 
 our @LIBRARIES;	    # will store the list of found libraries as Perl class names
 our @PLUGINS;	    # will store the names of all loaded plugins as Perl class names

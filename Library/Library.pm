@@ -21,7 +21,7 @@
 
 package Audio::LADSPA::Library;
 use strict;
-our $VERSION = sprintf("%d.%03d", '$Name: v0_009-2004-01-02 $' =~ /(\d+)_(\d+)/,0,0);
+our $VERSION = sprintf("%d.%03d", '$Name: v0_010-2004-06-28 $' =~ /(\d+)_(\d+)/,0,0);
 no strict 'refs';
 
 sub plugins {
@@ -52,12 +52,12 @@ __END__
 
 =head1 NAME
 
-Audio::LADPSA::Library
+Audio::LADSPA::Library
 
 =head1 SYNOPSIS
 
     use Audio::LADSPA;
-    my @libs = Audio::LADPSA->libraries();
+    my @libs = Audio::LADSPA->libraries();
     # @libs is an array of Audio::LADSPA::Library classes
 
 =head1 DESCRIPTION

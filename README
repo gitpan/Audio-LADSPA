@@ -34,6 +34,7 @@ LADSPA dependencies:
  because most other LADSPA hosts need it.
 
  You can download the sdk from from http://www.ladspa.org/
+ Debian users can use "apt-get install ladspa-sdk"
 
  Alternatively, you can skip the tests, but these modules
  are of no use without at least SOME plugins installed.
@@ -53,7 +54,7 @@ care of automatically.
 
 COPYRIGHT AND LICENCE
 
-Copyright (C) 2003 Joost Diepenmaat
+Copyright (C) 2003 - 2004 Joost Diepenmaat
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

@@ -20,7 +20,7 @@
 package Audio::LADSPA::Plugin::XS;
 use strict;
 use base qw(DynaLoader Audio::LADSPA::Plugin);
-our $VERSION = sprintf("%d.%03d", '$Name: v0_009-2004-01-02 $' =~ /(\d+)_(\d+)/,0,0);
+our $VERSION = sprintf("%d.%03d", '$Name: v0_010-2004-06-28 $' =~ /(\d+)_(\d+)/,0,0);
 use Carp;
 
 __PACKAGE__->bootstrap($VERSION);
@@ -35,7 +35,7 @@ __END__
 
 =head1 NAME
 
-Audio::LADPSA::Plugin::XS - XS representation of ladspa plugins
+Audio::LADSPA::Plugin::XS - XS representation of ladspa plugins
 
 =head1 DESCRIPTION
 

@@ -81,7 +81,7 @@ LADSPA_Descriptor* my_descriptor(SV* self) {
 
 
 /*
-    Instantiate a plugin and return pointer to Audio_LADPSA_Plugin struct as a blessed
+    Instantiate a plugin and return pointer to Audio_LADSPA_Plugin struct as a blessed
     scalar ref
 */
 
@@ -213,9 +213,10 @@ void run(Audio_LADSPA_Plugin self, unsigned long count) {
 
 unsigned long port_index(LADSPA_Descriptor* descriptor, SV* buffer) {
     unsigned long i;
+    char* string;
     if (SvPOK(buffer)) {
 	i = 0;
-	char* string = SvPVX(buffer);
+	string = SvPVX(buffer);
 	while (string[i] != 0) {
 	    if (string[i] < '0' || string[i] > '9') {
 		for (i = 0; i < descriptor->PortCount; i++) {
@@ -450,13 +451,13 @@ get_buffer(self, port)
     OUTPUT:
     RETVAL
 
-SV*
+const char*
 port_name(self, index)
     SV* self
     unsigned long index
     CODE:
     LADSPA_Descriptor* descriptor = my_descriptor(self);
-    RETVAL = newSVpv(descriptor->PortNames[index],0);
+    RETVAL = descriptor->PortNames[index];
     OUTPUT:
     RETVAL
 
