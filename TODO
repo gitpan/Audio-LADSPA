@@ -1,0 +1,12 @@
+Some ideas that may or may not be implemented...
+
+Status index: 
+ ! - will be done "soon"
+ * - will probably be done "someday"
+ ? - might be done "someday" if it still seems like a good idea.
+
+ * Move Audio::LADSPA::LibraryLoader code to Audio::LADSPA module
+ ! Clean up interface to library loading
+ ! Clarify docs on library loading
+ * Complete Audio::LADSPA::Network  
+  

@@ -1,0 +1,313 @@
+# Audio::LADSPA perl modules for interfacing with LADSPA plugins
+# Copyright (C) 2003  Joost Diepenmaat.
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+#
+# See the COPYING file for more information.
+
+=pod
+
+=head1 NAME
+
+Audio::LADPSA::Plugin - Use ladpsa plugins from perl
+
+=head1 SYNOPSIS
+
+    use Audio::LADSPA;
+
+    my (@plugin_classes) = Audio::LADPSA->plugins();
+    
+    # or ...
+    my $plugin_class = Audio::LADSPA->plugin( label => "delay_5s", id => 1043);
+
+    my $plugin = $plugin_class->new($sample_rate);
+
+=head1 DESCRIPTION
+
+Audio::LADSPA::Plugin is a base class for LADSPA plugins. Default behaviour of the Audio::LADPSA 
+module is to generate a subclass for each plugin found in LADSPA_PATH, using the 
+Audio::LADSPA::LibraryLoader module.
+
+You can use the Audio::LADSPA::Plugin classes to query the capabilities of the loaded plugin, and
+you can instantiate new objects from them to do some actual audio processing.
+
+A list of all available classnames on your system can be retrieved from C<< Audio::LADSPA->plugins() >>, or you can
+get one by label and / or id via C<< Audio::LADSPA->plugin( %ARGS ) >>.
+
+=head1 Class Methods
+
+These methods can all be used as class methods as well as object methods, So you can query plugins
+without creating a new instance, or query an object you've already created.
+
+=head2 id
+
+ my $id = $plugin_class->id();
+
+Returns the I<unique id> of the plugin class, as reported by the plugin itself. 
+
+=head2 label
+
+ my $label = $plugin_class->label();
+
+The short name of the plugin.
+
+=head2 name
+
+ my $name = $plugin_class->name();
+ 
+A more descriptive name of the plugin.
+
+=head2 maker
+
+ my $maker = $plugin_class->maker();
+ 
+The author of the plugin.
+
+=head2 copyright
+
+ my $copy = $plugin_class->copyright();
+
+The copyright message for the plugin.
+
+=head2 port_count
+
+ my $num_ports = $plugin_class->port_count();
+ 
+The number of input / output / audio / control ports for the plugin, added together.
+
+=head2 is_realtime
+
+ if ($plugin_class->is_realtime()) {
+     warn "This plugin uses realtime input";
+ }
+
+I<From the LADSPA SDK:>
+"Indicates that the plugin has a real-time dependency (e.g. listens to a MIDI device)
+and so its output must not be cached or subject to significant latency."
+
+The Audio::LADSPA environment might not be fast enough for these kinds of plugins though.
+Report back to me if you can get it to do something interesting in real time.  
+
+=head2 is_inplace_broken
+
+ if ($plugin->is_inplace_broken()) {
+    # connect plugin to seperate output buffer
+ }
+ else {
+    # connect plugin to shared output buffer
+ }
+ 
+Returns true if the plugin doesn't use the C<run_adding()> method, so you should not
+connect it need to a shared buffer. See L<run_adding> for more info. 
+
+=head2 is_hard_rt_capable
+
+ if ($plugin->is_hard_rt_capable) {
+    # do something in realtime
+ }
+
+Returns true if the plugin can be run in a realtime environment. Whether the Audio::LADSPA
+host is a realtime environment, probably depends on you hardware and the complexity of your
+plugin network. Let me know.
+
+=head2 has_run
+
+Returns true if the plugin has a C<run()> method.
+
+=head2 has_run_adding
+
+Returns true if the plugin has a C<run_adding()> method.
+
+=head2 has_activate
+
+Returns true if the plugin has an C<activate()> method. 
+
+=head2 has_deactivate
+
+Returns true if the plugin has an C<deactivate()> method. 
+
+=head2 ports
+
+ my @ports = $plugin->ports();
+
+Returns the names of all input/output ports for this plugin, ordered by port index.
+
+=head2 port
+
+ my $port = $plugin->port($index);
+
+Returns the name of an input/output port for the plugin given its index.
+
+=head1 Constructor
+
+=head2 new
+
+ my $plugin_object = $plugin_class->new($sample_rate);
+
+ # now do something interesting involving audio
+
+Create a new plugin object of $plugin_class and set its sample rate to $sample_rate. Usually you will want
+to set all connected plugins to the same sample rate. Audio::LADSPA::Network objects
+will do this automatically for you.
+
+=head1 Object Methods
+
+The following methods involve connections to buffers, handling audio data etc.
+
+=head2 connect
+
+ $plugin->connect( $port => $buffer);
+
+Connects the $port to the Audio::LADSPA::Buffer $buffer. Returns true on success, false otherwise.
+
+B<<<< If the $plugin is part of an Audio::LADSPA::Network, use L<< $network->connect()|Audio::LADSPA::Network/connect >> instead >>>>.
+
+See also  L<Audio::LADPSA::Network/connect> and L<cb_connect>.
+
+=head2 disconnect
+
+ $plugin->disconnect( $port );
+
+Disconnect a $port.
+See also L</cb_disconnect>.
+
+=head2 get_buffer
+
+ my $buffer = $plugin->get_buffer( $port );
+
+Returns the buffer connected to the specified port. Returns C<undef> if not connected. 
+
+=head2 set
+
+ $plugin->set( $port => @values );
+
+ # eg..
+ 
+ $drum->set( Velocity => 10 );
+ $echo->set( Input    => 1, 1, 0, 0, -1, -1, 0, 0 );
+
+Set the Audio::LADSPA::Buffer connected to the $port.
+See L<Audio::LADSPA::Buffer/set>.
+
+=head2 get
+
+ my @values = $plugin->get( $port );
+ my $value  = $plugin->get( $port );
+
+ # eg
+
+ @output = $sine_fcac->get('Output');
+
+Get the data from the Audio::LADSPA::Buffer connected to the $port.
+See L<Audio::LADSPA::Buffer/get>.
+
+=head2 activate
+
+ $plugin->activate();
+
+Signal that the plugin should get ready to run. Is called automatically when C<run> or C<run_adding>
+is called and the plugin is not active. Is ignored after the first call, except when C<deactivate()> is
+called. 
+
+=head2 deactivate
+
+ $plugin->deactivate();
+
+Signal that the plugin can stop. Calling C<deactivate()> and then C<activate()> should reset the plugin. 
+
+=head2 run
+
+ $plugin->run($num_samples);
+
+Run the plugin for $num_samples samples. All ports should be connected to a buffer, and C<activate> is
+called automatically if the plugin isn't active already.
+
+Usually $plugin will read from all buffers connected to its input ports and write to all buffers connected to
+its output ports.
+
+=head2 run_adding
+
+ $plugin->run_adding($num_samples);
+
+Same as C<run()> except that the plugin will add its output to the buffers connected to its output ports,
+instead of overwriting them. Use C<< $plugin->has_run_adding() >> to check whether the plugin supports this
+mode.
+
+=head2 run_adding_gain
+
+ $plugin->run_adding_gain($gain);
+
+Set the output gain for the C<run_adding()> method. Will throw an exception if the plugin has no C<run_adding()> method. Check C<< $plugin->has_run_adding() >>.
+
+=head1 SETTING CALLBACKS
+
+To ease the creation of 'container' objects for C<Audio::LADSPA::Plugin>s, you can register a
+'monitor' object that will recieve callbacks whenever certain methods are called on the plugin.
+
+Please note that the monitor object should be kept in scope by the container; the reference counting
+for the $monitor object is NOT increased by calling C<< $plugin->set_monitor($monitor) >>. This is
+intentional; it allows the container to be the monitor, while still being DESTROYED when
+going out of scope (this means you don't have to worry about this when the container is the monitor;
+the Perl garbage collector will work as you would expect it to). See L<Audio::LASDPA::Network> for
+an implementation.
+
+=head2 set_monitor
+
+ $plugin->set_monitor($monitor);
+
+Sets the $monitor object for $plugin. Use C<< $plugin->set_monitor(undef) >> to remove a monitor object.
+
+=head2 monitor
+
+ my $monitor = $plugin->monitor();
+
+Returns the $monitor object for $plugin, or C<undef> if there is no monitor set.
+
+=head1 CALLBACK METHODS
+
+In general, the callback methods will be called when the corresponing event is called, before
+any processing of the event is done. Some callback methods can return true or false indicating
+that the event should be processed or not. When a plugin has no monitor, or the callback is
+not implemented, the event is processed (the plugin acts as if the callback returned true).
+
+The monitor object may implement the following methods:
+
+=head2 cb_connect
+
+ $monitor->cb_connect( $plugin, $port, $buffer );
+
+Will be called when C<< $plugin->connect($port, $buffer) >> is called. If cb_connect returns
+false, the connection will not be made.
+
+=head2 cb_disconnect
+
+ $monitor->cb_disconnect( $plugin, $port );
+
+Will be called when C<< $plugin->disconnect($port) >> is called.
+
+
+=head1 SEE ALSO
+
+L<Audio::LADSPA>, L<Audio::LASDPA::Plugin::Automatic>, L<Audio::LADSPA::Plugin::Perl>.
+
+=head1 COPYRIGHT AND LICENSE
+
+Copyright (C) 2003 Joost Diepenmaat <joost AT hortus-mechanicus.net>
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+

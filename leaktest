@@ -1,0 +1,22 @@
+#!/usr/bin/perl
+
+use blib;
+use Audio::LADSPA::Network;
+
+use strict;
+
+my $plug = "Audio::LADSPA::Plugin::delay_5s_1043";
+
+for (0 .. 100000) {
+    $0 = "leaktest$_";
+    warn $0;
+    my $net = Audio::LADSPA::Network->new(44100);
+    $net->add_plugin( id => 1043 );
+}
+while(1) {
+    sleep 10;
+}
+
+
+
+

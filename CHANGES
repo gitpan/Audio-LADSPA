@@ -1,0 +1,18 @@
+0.008 -
+ * Added Audio::LADSPA::UserGuide and expanded the documentation
+   in general.
+
+0.007 -
+ * Removed Port objects - access is now done via Plugin methods
+ * Made test rely in Audio::Play instead of Audio::Wav
+ 
+0.006 -
+ * Added simple buffer arithmatic
+ * Fixed some bugs
+ * Added simpler interface to buffer get/set methods 
+
+0.005 - 
+ * Initial release
+ * Tests make 'beep beep' sound :-)
+ 
+
