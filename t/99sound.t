@@ -1,7 +1,7 @@
 #!/usr/bin/perl -w
 use strict;
 
-use Test::More tests => 14;
+use Test::More tests => 13;
 
 BEGIN {
     use_ok('Audio::LADSPA::Network');
@@ -53,15 +53,6 @@ for (0 .. 800) {
   $net->run(100);
 }
 
-
-SKIP: {
-#    skip("No audio output",1) unless $p;
-    print STDERR "You should have heard some rising tones in a loop, with one 0.5 second echo\n";
-    print STDERR "Did it work? [Y]";
-    my $y = <STDIN>;
-    chomp($y);
-    ok($y eq '' or $y =~ /y/i,"Sounds ok!");
-}
 
 
     

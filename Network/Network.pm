@@ -19,7 +19,7 @@
 
 package Audio::LADSPA::Network;
 use strict;
-our $VERSION = sprintf("%d.%03d", '$Name: v0_014-2004-07-06 $' =~ /(\d+)_(\d+)/,0,0);
+our $VERSION = sprintf("%d.%03d", '$Name: v0_015-2005-01-05 $' =~ /(\d+)_(\d+)/,0,0);
 use Audio::LADSPA;
 use Graph::Directed;
 use Carp;
@@ -65,8 +65,8 @@ sub graph {
 sub add_plugin {
     my ($self) = shift;
     my $plugin = $self->_make_plugin(@_);
-    $self->graph->add_vertex($plugin);
-    $self->graph->set_attribute('plugin',$plugin,$plugin);
+    $self->graph->add_vertex("$plugin");
+    $self->graph->set_vertex_attribute("$plugin",'plugin',$plugin);
     for ($plugin->ports()) {
 	$self->_connect_default($plugin,$_) unless $plugin->get_buffer($_);
     }
@@ -77,7 +77,7 @@ sub add_plugin {
 sub plugins {
     my ($self) = @_;
     if (!$self->{run_order}) {
-	$self->{run_order} = [ map { my $p = $self->graph->get_attribute('plugin',$_); $p ? $p : () } $self->graph->toposort() ];
+	$self->{run_order} = [ map { my $p = $self->graph->get_vertex_attribute("$_",'plugin'); $p ? $p : () } $self->graph->toposort() ];
     }
 
     return @{$self->{run_order}};
@@ -85,7 +85,7 @@ sub plugins {
 
 sub has_plugin {
     my ($self,$plugin) = @_;
-    return $self->graph->has_vertex($plugin);
+    return $self->graph->has_vertex("$plugin");
 }
 
 sub add_buffer {
@@ -93,18 +93,18 @@ sub add_buffer {
     if (!ref $buff) {
 	$buff = Audio::LADSPA::Buffer->new($buff);
     }
-    $self->graph->add_vertex($buff);
-    $self->graph->set_attribute('buffer',$buff,$buff);
+    $self->graph->add_vertex("$buff");
+    $self->graph->set_vertex_attribute("$buff",'buffer',$buff);
     return $buff;
 }
 
 sub buffers {
     my ($self) = @_;
-    return map { my $b = $self->graph->get_attribute('buffer', $_); $b ? $b : () } $self->graph->vertices();
+    return map { my $b = $self->graph->get_vertex_attribute("$_",'buffer'); $b ? $b : () } $self->graph->vertices();
 }
 sub has_buffer {
     my ($self,$buffer) = @_;
-    return $self->graph->has_vertex($buffer);
+    return $self->graph->has_vertex("$buffer");
 }
 
 
@@ -195,23 +195,23 @@ sub cb_connect {
     #   try out to see if we get cycles
     my $H = $self->graph->copy();
     if ($plug->is_input($port)) {
-	$H->add_edge($buffer,$plug);
+	$H->add_edge("$buffer","$plug");
     }
     else {
-	$H->add_edge($plug,$buffer);
+	$H->add_edge("$plug","$buffer");
     }
-    if (reduce_to_cycles($H)->vertices) {
+    if ($H->has_a_cycle) {
 	return 0;
     }
 
     # fine, now for real
     if ($plug->is_input($port)) {
-	$self->graph->add_edge($buffer,$plug);
-	$self->graph->set_attribute("port",$buffer,$plug,$port);
+	$self->graph->add_edge("$buffer","$plug");
+	$self->graph->set_edge_attribute("$buffer","$plug","port",$port);
     }
     else {
-	$self->graph->add_edge($plug,$buffer);
-	$self->graph->set_attribute("port",$plug,$buffer,$port);
+	$self->graph->add_edge("$plug","$buffer");
+	$self->graph->set_edge_attribute("$plug","$buffer","port",$port);
 	
     }
     $self->{run_order} = undef;
@@ -240,49 +240,23 @@ sub cleanup_buffers {
     }
 }
 
-# returns a graph cointaining all vertices that are in one
-# or more cycles.
-# see also http://www.perlmonks.org/index.pl?node_id=316982
-
-sub cycles {
-    my $G = shift;
-    my $H = $G->copy;
-    return reduce_to_cycles($H);
-}
-
-# reduce_to_cycles() modifies the input graph, use cycles() to make
-# a copy first.
-
-sub reduce_to_cycles {
-    my $G = shift;
-    while ($G->vertices) {
-# get the 'end' vertices
-        my @ends = grep { ! $G->out_edges($_) or ! $G->in_edges($_) } $G->vertices; 
-        if (@ends) {
-# remove 'end' vertices, and repeat
-            $G->delete_vertices(@ends);
-            next;
-        }
-        else {
-# Graph is not empty, but also has no end vertices
-# any more, so we're left with cycles...
-            return $G;     
-        }
-    }
-    return $G;
-}   
-
-
 sub connections {
     my ($self,$plug,$port) = @_;
     my $buffer = $plug->get_buffer($port) or croak "$plug has no buffer for port $port";
     my @res;
-    for my $plug2 (grep {defined $_ and ( $_ ne $buffer && $_ ne $plug) } $self->graph->edges($buffer)) {
-	my $port2 =  $self->graph->get_attribute("port",$plug2,$buffer) || $self->graph->get_attribute("port",$buffer,$plug2);
-	die "no port found for edge $buffer <-> $plug2" unless $port2;
-	$plug2 = $self->graph->get_attribute("plugin",$plug2) or die "Can't find $plug2";
-	push @res,$plug2,$port2;
+    if ($plug->is_input($port)) {
+        for ($self->graph->edges_to("$buffer")) {
+            push @res, $self->graph->get_vertex_attribute($_->[0],"plugin");
+            push @res, $self->graph->get_edge_attribute($_->[0],$_->[1],"port");
+        }
     }
+    else {
+        for ($self->graph->edges_from("$buffer")) {
+            push @res, $self->graph->get_vertex_attribute($_->[1],"plugin");
+            push @res, $self->graph->get_edge_attribute($_->[0],$_->[1],"port");
+        }
+    }
+                
     return @res;
 }
 

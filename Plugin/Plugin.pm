@@ -19,7 +19,7 @@
 
 package Audio::LADSPA::Plugin;
 use strict;
-our $VERSION = sprintf("%d.%03d", '$Name: v0_014-2004-07-06 $' =~ /(\d+)_(\d+)/,0,0);
+our $VERSION = sprintf("%d.%03d", '$Name: v0_015-2005-01-05 $' =~ /(\d+)_(\d+)/,0,0);
 use Carp;
 use constant ABOVE_ZERO => 0.00000000000000000000000000000000000000000000000000000001;
 use Data::Uniqid qw();

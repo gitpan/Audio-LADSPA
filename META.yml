@@ -1,14 +1,14 @@
 # http://module-build.sourceforge.net/META-spec.html
 #XXXXXXX This is a prototype!!!  It will change in the future!!! XXXXX#
 name:         Audio-LADSPA
-version:      0.014
+version:      0.015
 version_from: LADSPA.pm
 installdirs:  site
 requires:
     Audio::Data:                   1
     Audio::Play:                   1
     Data::Uniqid:                  0
-    Graph::Directed:               0
+    Graph:                         0.5
     Scalar::Util:                  0
     Test::More:                    0
 

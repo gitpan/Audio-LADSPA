@@ -1,3 +1,12 @@
+0.016 -
+ * Audio::LADSPA::Network now works with new (0.5) Graph module
+ * Removed user querying at end of tests so the tests can be run
+   without user intervention
+ * Some small additions to the docs
+
+0.015 -
+ * Some additions to Audio::LADSPA::UserGuide
+
 0.014 -
  * Network now checks wether added plugins are already connected
    (the documentation already claimed that it did)

@@ -1,7 +1,7 @@
 #!/usr/bin/perl -w
 use strict;
 
-our $VERSION = sprintf("%d.%03d", '$Name: v0_014-2004-07-06 $' =~ /(\d+)_(\d+)/,0,0);
+our $VERSION = sprintf("%d.%03d", '$Name: v0_015-2005-01-05 $' =~ /(\d+)_(\d+)/,0,0);
 
 
 warn <<GPL unless -f 'Makefile';
@@ -76,7 +76,7 @@ WriteMakefile(
 	'Test::More' => 0, 
 	'Audio::Play' => 1.000, 
 	'Audio::Data' => 1.000,
-	'Graph::Directed' => 0,
+	'Graph' => 0.5,         # NEW interface for graph
 	'Scalar::Util' => 0, 
 	'Data::Uniqid' => 0,
     }, # e.g., Module::Name => 1.i

@@ -20,7 +20,7 @@ ok($net->connect($delay1,'Output',$delay2,'Input'),"normal connect");
 
 ok(!$net->cb_connect($delay2,'Output',$delay1->get_buffer('Input')),"circular connect callback");
 
-ok(Audio::LADSPA::Network::cycles($net->graph)->vertices == 0,"No cycles");
+ok(!$net->graph->has_a_cycle,"No cycles");
 
 
 ok(!$delay2->connect('Output',$delay1->get_buffer('Input')),"circular connect on plugin");

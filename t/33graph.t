@@ -28,12 +28,11 @@ ok ($G->isa("Graph::Directed"),"Graph instance");
 
 my $d1 = Dummy->new;
 my $d2 = Dummy->new;
-$G->add_edge($d1,$d2);
-$G->set_attribute('object',$d1,$d1);
-$G->set_attribute('object',$d2,$d2);
-
+$G->add_edge("$d1","$d2");
+$G->set_vertex_attribute("$d1",'object',$d1);
+$G->set_vertex_attribute("$d2",'object',$d2);
 my @d = eval {
-    grep { $G->get_attribute('object',$_)->test } $G->toposort();
+    grep { $G->get_vertex_attribute("$_",'object')->test } $G->toposort();
 }; 
 ok (!$@,"Objects as attributes");
 ok( @d == 2,"Objects as attributes2");

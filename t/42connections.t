@@ -1,7 +1,7 @@
 #!/usr/bin/perl -w
 use strict;
 
-use Test::More tests => 15;
+use Test::More tests => 18;
 
 BEGIN {
     use_ok('Audio::LADSPA::Network');
@@ -19,9 +19,16 @@ my $dump;
     ok($net->connect($delay1,'Output',$delay2,'Input'),"normal connect");
 
     my @dest = $net->connections($delay1,'Output');
-    ok(@dest == 2,"1 connection");
+    is (scalar @dest, 2,"1 connection");
     is ($dest[0],$delay2,"connections: plugin");
     is ($dest[1],"Input","connections: port");
+
+
+    @dest = $net->connections($delay2,'Input');
+    is (scalar @dest, 2,"1 connection");
+    is ($dest[0],$delay1,"connections: plugin");
+    is ($dest[1],"Output","connections: port");
+
 
     $delay1->set('Delay (Seconds)',0.1);
     $delay2->set('Delay (Seconds)',0.8);
