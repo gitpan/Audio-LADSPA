@@ -19,7 +19,7 @@
 
 package Audio::LADSPA::Network;
 use strict;
-our $VERSION = sprintf("%d.%03d", '$Name: v0_008-2003-12-28 $' =~ /(\d+)_(\d+)/,0,0);
+our $VERSION = sprintf("%d.%03d", '$Name: v0_009-2004-01-02 $' =~ /(\d+)_(\d+)/,0,0);
 use Audio::LADSPA;
 use Graph::Directed;
 use Carp;
@@ -127,7 +127,6 @@ sub DESTROY {
 
     # this is not really needed, but it make for a nice place
     # for things to break down, if I mix up the reference counts again.
-    
     delete $self->{graph};
     $self->{run_order} = undef;
 }

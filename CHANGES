@@ -1,6 +1,14 @@
+0.009 -
+ * All dependencies are now declared in the top-level Makefile.PL
+   (should make CPAN a bit happier)
+ * Some bugs have been fixed
+ * Implemented a non-C'99 compatibility patch by Mike Castle.
+
 0.008 -
  * Added Audio::LADSPA::UserGuide and expanded the documentation
    in general.
+ * Added Audio::LADSPA::Plugin::Perl & Audio::LADSPA::Plugin::Play
+ * made Audio::LADSPA::Network a lot more usable.
 
 0.007 -
  * Removed Port objects - access is now done via Plugin methods

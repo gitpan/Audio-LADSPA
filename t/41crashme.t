@@ -36,6 +36,11 @@ my %buffer = ( $buff => $buff);
 
 $sine->disconnect_all();
 
+{
+    my $net = Audio::LADSPA::Network->new();
+}
+
+
 END {
     ok(1,"End phase");
 }

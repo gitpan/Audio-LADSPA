@@ -58,6 +58,7 @@
 */
 
 LADSPA_Descriptor* my_descriptor(SV* self) {
+    SV* descriptor_store = NULL;
     SV* package;
     if (sv_isobject(self) && sv_derived_from(self,"Audio::LADSPA::Plugin::XS")) {
 	HV* stash = SvSTASH(SvRV(self));
@@ -71,7 +72,6 @@ LADSPA_Descriptor* my_descriptor(SV* self) {
 	croak("not a valid Audio::LADSPA::Plugin::XS");
     }
     
-    SV* descriptor_store = NULL;
     descriptor_store = get_sv(form("%_::_ladspa_descriptor",package),0);
     if (descriptor_store && SvIOK(descriptor_store) && SvREADONLY(descriptor_store)) {
 	return INT2PTR(LADSPA_Descriptor* ,SvIVX(descriptor_store));
@@ -86,11 +86,13 @@ LADSPA_Descriptor* my_descriptor(SV* self) {
 */
 
 SV* new(SV* package, unsigned long sample_rate) {
+    Audio_LADSPA_Plugin plugin = NULL;
+    SV* self;
+    SV* ref;
     LADSPA_Descriptor* descriptor = my_descriptor(package);
     LADSPA_Handle* handle = descriptor->instantiate(descriptor,sample_rate);
     if (handle == NULL)
 	croak("Cannot create plugin handle\n");
-    Audio_LADSPA_Plugin plugin = NULL;
     Newz(0,plugin,1,Audio_LADSPA_Plugin_t);
     if (plugin == NULL)
 	croak("Cannot create Plugin struct");
@@ -98,8 +100,8 @@ SV* new(SV* package, unsigned long sample_rate) {
     plugin->descriptor = descriptor;
     plugin->monitor = &PL_sv_undef;
     Newz(0,plugin->buffers,descriptor->PortCount,SV*);	/* reserve space for buffer sv's - one for each port */
-    SV* self = newSViv(PTR2IV(plugin));
-    SV* ref = sv_bless(newRV_noinc(self),gv_stashsv(package,0));
+    self = newSViv(PTR2IV(plugin));
+    ref = sv_bless(newRV_noinc(self),gv_stashsv(package,0));
     SvREADONLY_on(self);
     return ref;
 }
@@ -134,8 +136,8 @@ void activate(Audio_LADSPA_Plugin self) {
 */
 
 void DESTROY(Audio_LADSPA_Plugin self) {
+    unsigned long i;
     deactivate(self);
-    int i;
     for (i=0;i<self->descriptor->PortCount;i++) {
 	if (self->buffers[i]) {
 	    SvREFCNT_dec(self->buffers[i]);
@@ -149,7 +151,7 @@ void DESTROY(Audio_LADSPA_Plugin self) {
 /* set the buffer status after a run() / run_adding()  call */
 
 void set_buffers_filled( Audio_LADSPA_Plugin self, unsigned long count ) {
-    int i = 0;
+    unsigned long i = 0;
     for (i =0 ; i < self->descriptor->PortCount; i++) {
 	if (! LADSPA_IS_PORT_INPUT(self->descriptor->PortDescriptors[i])) {
 	    Audio_LADSPA_Buffer buffer = AL_Buffer_from_sv(self->buffers[i]);
@@ -210,8 +212,9 @@ void run(Audio_LADSPA_Plugin self, unsigned long count) {
 /* return port index from name or number */
 
 unsigned long port_index(LADSPA_Descriptor* descriptor, SV* buffer) {
+    unsigned long i;
     if (SvPOK(buffer)) {
-	unsigned long i = 0;
+	i = 0;
 	char* string = SvPVX(buffer);
 	while (string[i] != 0) {
 	    if (string[i] < '0' || string[i] > '9') {
@@ -226,12 +229,12 @@ unsigned long port_index(LADSPA_Descriptor* descriptor, SV* buffer) {
 	}
     }
     else {
-	unsigned long index = SvIV(buffer);
-	if (index >= descriptor->PortCount) {
+	i = SvIV(buffer);
+	if (i >= descriptor->PortCount) {
 	    croak("Port index %d out of bounds",index);
 	}
-	return index;
     }
+    return i;
 }
 
 
@@ -388,9 +391,12 @@ _unregistered_connect(self, port, buffer_sv)
     Audio_LADSPA_Plugin self
     SV* port
     SV* buffer_sv
+    PREINIT:
+    Audio_LADSPA_Buffer buffer;
+    unsigned long index;
     CODE:
-    Audio_LADSPA_Buffer buffer = AL_Buffer_from_sv(buffer_sv);
-    unsigned long index = port_index(self->descriptor, port);
+    buffer = AL_Buffer_from_sv(buffer_sv);
+    index = port_index(self->descriptor, port);
     self->descriptor->connect_port(self->handle, port_index(self->descriptor, port), buffer->data);
     SvREFCNT_inc(SvRV(buffer_sv));
     self->buffers[index] = newSVsv(buffer_sv);
@@ -416,8 +422,10 @@ void
 _unregistered_disconnect(self, port)
     Audio_LADSPA_Plugin self
     SV* port
+    PREINIT:
+    unsigned long index;
     CODE:
-    unsigned long index = port_index(self->descriptor, port);
+    index = port_index(self->descriptor, port);
     deactivate(self);
     if (self->buffers[index] != NULL) {
 	SvREFCNT_dec(self->buffers[index]);
@@ -429,8 +437,10 @@ SV*
 get_buffer(self, port)
     Audio_LADSPA_Plugin self
     SV* port
+    PREINIT:
+    unsigned long index;
     CODE:
-    unsigned long index = port_index(self->descriptor, port);
+    index = port_index(self->descriptor, port);
     if (self->buffers[index]) {
         RETVAL = newSVsv(self->buffers[index]);
     }

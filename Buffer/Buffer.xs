@@ -27,18 +27,20 @@
 #include "Buffer.h"
 
 SV* new(SV* package, unsigned long size) {
-    if (size == 0) croak("Buffer size must be > 0");
     LADSPA_Data *data = NULL;
+    Audio_LADSPA_Buffer buffer = NULL;
+    SV* self;
+    SV* ref;
+    if (size == 0) croak("Buffer size must be > 0");
     New(0,data,size,LADSPA_Data);
     if (data == NULL) croak("Could not allocate memory for buffer data");
-    Audio_LADSPA_Buffer buffer = NULL;
     New(0,buffer,1,Audio_LADSPA_Buffer_t);
     if (buffer == NULL) croak("Could not allocate memory for Buffer struct");
     buffer->data = data;
     buffer->size = size;
     buffer->filled = 0;
-    SV* self = newSViv(PTR2IV(buffer));
-    SV* ref = sv_bless(newRV_noinc(self),gv_stashsv(package,1));
+    self = newSViv(PTR2IV(buffer));
+    ref = sv_bless(newRV_noinc(self),gv_stashsv(package,1));
     return ref;
 }
 
@@ -99,9 +101,10 @@ unsigned long filled(Audio_LADSPA_Buffer buffer) {
 /*  math functions */
 
 SV* is_mult(SV* self_sv, LADSPA_Data val, SV* order) {
+    unsigned long i;
     Audio_LADSPA_Buffer self = AL_Buffer_from_sv(self_sv);
     SvREFCNT_inc(self_sv);  /* '*=' operator should still return its value, so we inc the refcount on $self */
-    unsigned long i = self->filled;
+    i = self->filled;
     if (i == 0) {
 	return self_sv;
     }
@@ -119,19 +122,21 @@ SV* is_mult(SV* self_sv, LADSPA_Data val, SV* order) {
 */
 
 SV* undef_copy(SV* sv) {
+    LADSPA_Data *data = NULL;
+    Audio_LADSPA_Buffer buffer = NULL;
+    SV* new;
+    SV* ref;
     Audio_LADSPA_Buffer self = AL_Buffer_from_sv(sv);
     if (self->size == 0) croak("Buffer size must be > 0");
-    LADSPA_Data *data = NULL;
     New(0,data,self->size,LADSPA_Data);
     if (data == NULL) croak("Could not allocate memory for buffer data");
-    Audio_LADSPA_Buffer buffer = NULL;
     New(0,buffer,1,Audio_LADSPA_Buffer_t);
     if (buffer == NULL) croak("Could not allocate memory for Buffer struct");
     buffer->data = data;
     buffer->size = self->size;
     buffer->filled = 0;
-    SV* new = newSViv(PTR2IV(buffer));
-    SV* ref = sv_bless(newRV_noinc(new),SvSTASH(SvRV(sv)));
+    new = newSViv(PTR2IV(buffer));
+    ref = sv_bless(newRV_noinc(new),SvSTASH(SvRV(sv)));
     return ref;
 }
     

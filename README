@@ -42,7 +42,7 @@ CPAN dependencies:
 
 Also, this extension requires the following Perl modules;
 
-  Test::More and Audio::Play
+  Test::More, Audio::Play, Scalar::Util and Graph::Directed
    
 Install them first from CPAN. Alternatively, if you're
 installing using the CPAN or CPANPLUS shell, this can be taken

@@ -300,7 +300,7 @@ Will be called when C<< $plugin->disconnect($port) >> is called.
 
 =head1 SEE ALSO
 
-L<Audio::LADSPA>, L<Audio::LASDPA::Plugin::Automatic>, L<Audio::LADSPA::Plugin::Perl>.
+L<Audio::LADSPA>, L<Audio::LASDPA::Plugin::XS>, L<Audio::LADSPA::Plugin::Perl>.
 
 =head1 COPYRIGHT AND LICENSE
 

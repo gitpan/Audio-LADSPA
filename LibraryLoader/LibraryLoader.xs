@@ -40,6 +40,7 @@
 */
 
 SV* setup_plugin(const LADSPA_Descriptor* desc, const char * filename) {
+    SV* store_descriptor;
     SV* package = newSVpv(form("Audio::LADSPA::Plugin::XS::%s_%lu",desc->Label,desc->UniqueID),0);
 #ifdef DEBUGGING
     fprintf(stderr,"package for plugin: %s\n",SvPVX(package));
@@ -56,7 +57,7 @@ SV* setup_plugin(const LADSPA_Descriptor* desc, const char * filename) {
 
     /* store the plugin descriptor in $package::_ladspa_descriptor */
 
-    SV* store_descriptor = get_sv(form("%_::_ladspa_descriptor",package),1);
+    store_descriptor = get_sv(form("%_::_ladspa_descriptor",package),1);
     sv_setiv(store_descriptor,PTR2IV(desc));
     SvREADONLY_on(store_descriptor);
 
@@ -70,6 +71,14 @@ SV* setup_plugin(const LADSPA_Descriptor* desc, const char * filename) {
 */
 
 void load_lib_to_package(SV* self, const char* filename, const char* package) {
+    int i;
+    const LADSPA_Descriptor * desc = NULL;
+    AV* plugins_array;
+    SV* store_descriptor;
+    SV* store_filename;
+    SV* store_handle;
+    AV* isa_array;
+    LADSPA_Descriptor_Function descF;
 
     /* try to open the library and get the descriptor function */
     
@@ -79,7 +88,7 @@ void load_lib_to_package(SV* self, const char* filename, const char* package) {
     }
 
     dlerror();
-    LADSPA_Descriptor_Function descF = (LADSPA_Descriptor_Function)dlsym(handle, "ladspa_descriptor");
+    descF = (LADSPA_Descriptor_Function)dlsym(handle, "ladspa_descriptor");
     if (!descF) {
     	const char * pcError = dlerror();
 	if (pcError) {
@@ -91,32 +100,31 @@ void load_lib_to_package(SV* self, const char* filename, const char* package) {
     }
 
 
-    AV* isa_array = (AV*) get_av(form("%s::ISA",package),1); /* @package::ISA */
+    isa_array = (AV*) get_av(form("%s::ISA",package),1); /* @package::ISA */
     av_push(isa_array,newSVpvn("Audio::LADSPA::Library",22));
 
     /* store the dlopen handle in $library_package::_ladspa_handle */
 
-    SV* store_handle = get_sv(form("%s::_ladspa_handle",package),1);  /* create handle */
+    store_handle = get_sv(form("%s::_ladspa_handle",package),1);  /* create handle */
     sv_setiv(store_handle, PTR2IV(handle));
     SvREADONLY_on(store_handle);
 
     /* store the filename of the library in $library_package::LIBRARY_FILE */
 
-    SV* store_filename = get_sv(form("%s::LIBRARY_FILE",package),1);
+    store_filename = get_sv(form("%s::LIBRARY_FILE",package),1);
     sv_setpvn(store_filename,filename,strlen(filename));
     SvREADONLY_on(store_filename);
 
     /* store descriptor function */
 
-    SV* store_descriptor = get_sv(form("%s::_ladspa_descriptor_function",package),1);
+    store_descriptor = get_sv(form("%s::_ladspa_descriptor_function",package),1);
     sv_setiv(store_descriptor, PTR2IV(descF));
     SvREADONLY_on(store_descriptor);
 
     /* create plugin classes, and store their names in @library_package::PLUGINS */
        
-    AV* plugins_array = get_av(form("%s::PLUGINS",package),1);
-    const LADSPA_Descriptor * desc = NULL;
-    int i = 0;
+    plugins_array = get_av(form("%s::PLUGINS",package),1);
+    i = 0;
     while (desc = descF(i++), desc != NULL) {
 	av_push(plugins_array,setup_plugin(desc,filename));
     }

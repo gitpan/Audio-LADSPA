@@ -1,7 +1,9 @@
 #!/usr/bin/perl -w
 use strict;
 
-our $VERSION = sprintf("%d.%03d", '$Name: v0_008-2003-12-28 $' =~ /(\d+)_(\d+)/,0,0);
+our $VERSION = sprintf("%d.%03d", '$Name: v0_009-2004-01-02 $' =~ /(\d+)_(\d+)/,0,0);
+
+my $optimize = join(' ',@ARGV) || '-O';
 
 warn <<GPL unless -f 'Makefile';
 Audio::LADSPA v$VERSION
@@ -71,11 +73,16 @@ EOW
 WriteMakefile(
     'NAME'		=> 'Audio::LADSPA',
     'VERSION_FROM'	=> 'LADSPA.pm', # finds $VERSION
-    'PREREQ_PM'		=> {'Test::More' => 0, 'Audio::Play' => 1.000, 'Audio::Data' => 1.000 }, # e.g., Module::Name => 1.i
+    'PREREQ_PM'		=> {
+	'Test::More' => 0, 
+	'Audio::Play' => 1.000, 
+	'Audio::Data' => 1.000,
+	'Graph::Directed' => 0 
+    }, # e.g., Module::Name => 1.i
     
     ($] >= 5.005 ?    ## Add these new keywords supported since 5.005
        (AUTHOR     => 'Joost Diepenmaat <joost AT hortus-mechanicus.net>') : ()),
     'EXE_FILES'		=> ['eg/pluginfo'],
-    'OPTIMIZE'		=> '-g',
+    'OPTIMIZE'		=> $optimize,
 );
 
