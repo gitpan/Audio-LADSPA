@@ -39,7 +39,6 @@ leaktest
 ppport.h
 t/00load.t
 t/01loader_quickcheck.t
-t/02library_plugins.t
 t/03ports.t
 t/10plugin_description.t
 t/11plugin_object.t
@@ -57,3 +56,5 @@ Sequencer4/Makefile.PL
 Sequencer4/Sequencer4.pm
 t/42connections.t
 META.yml                                 Module meta-data (added by MakeMaker)
+
+t/util.pl

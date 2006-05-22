@@ -212,12 +212,9 @@ L<Audio::LADSPA::Buffer>
 For more information about the LADSPA API, and how to obtain more plugins, see 
 http://www.ladspa.org/
 
-The website for these modules is located at:
-http://www.hortus-mechanicus.net/perl/
-
 =head1 COPYRIGHT AND LICENSE
 
-Copyright (C) 2003 - 2004 Joost Diepenmaat <joost AT hortus-mechanicus.net>
+Copyright (C) 2003 - 2004 Joost Diepenmaat <jdiepen@cpan.org>
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

@@ -21,7 +21,7 @@
 
 package Audio::LADSPA::Library;
 use strict;
-our $VERSION = sprintf("%d.%03d", '$Name: v0_015-2005-01-05 $' =~ /(\d+)_(\d+)/,0,0);
+our $VERSION = sprintf("%d.%03d", '$Name: v0_016-2006-05-22 $' =~ /(\d+)_(\d+)/,0,0);
 no strict 'refs';
 
 sub plugins {
@@ -93,7 +93,7 @@ L<Audio::LADSPA>, L<Audio::LADSPA::Plugin>
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright (C) 2003 Joost Diepenmaat <joost AT hortus-mechanicus.net>
+Copyright (C) 2003 Joost Diepenmaat <jdiepen@cpan.org>
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

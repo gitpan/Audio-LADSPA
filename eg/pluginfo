@@ -245,7 +245,7 @@ L<Audio::LADSPA>, L<perl>.
 
 =head1 COPYRIGHT AND LICENCE
 
-Copyright (C) 2003 Joost Diepenmaat <pause AT hortus-mechanicus.net>
+Copyright (C) 2003 Joost Diepenmaat <jdiepen@cpan.org>
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

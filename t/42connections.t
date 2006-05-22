@@ -2,10 +2,13 @@
 use strict;
 
 use Test::More tests => 18;
-
+require "t/util.pl";
 BEGIN {
     use_ok('Audio::LADSPA::Network');
 }
+SKIP: {
+    skip("No SDK installed",17) unless sdk_installed();
+
 my $dump;
 {
     my $net = Audio::LADSPA::Network->new( buffer_size => 100 );
@@ -45,4 +48,4 @@ my ($plug2,$port2) = $net->connections($plugins[0],'Output');
 is ($plug2,$plugins[1],"Connected to right plugin");
 is ($port2,"Input","Connected to right port");
 
-
+}

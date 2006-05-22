@@ -3,8 +3,13 @@ use strict;
 
 use Test::More tests => 11;
 use Audio::LADSPA;
-
 use strict;
+
+require "t/util.pl";
+
+SKIP: {
+    skip("No SDK installed",11) unless sdk_installed();
+
 my $plug = Audio::LADSPA->plugin( id => 1043);
 
 ok($plug->isa("Audio::LADSPA::Plugin"),"loaded delay_5s/1043");
@@ -30,3 +35,4 @@ is ($plug->default('Dry/Wet Balance'),'middle',"default");
 
 is ($plug->default_value('Dry/Wet Balance'),0.5,"default_value");
 
+}

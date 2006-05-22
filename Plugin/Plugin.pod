@@ -443,7 +443,7 @@ http://www.ladspa.org/ or the ladspa.h file in this distribution.
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright (C) 2003 - 2004 Joost Diepenmaat <joost AT hortus-mechanicus.net>
+Copyright (C) 2003 - 2004 Joost Diepenmaat <jdiepen@cpan.org>
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

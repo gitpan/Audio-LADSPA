@@ -24,7 +24,7 @@ use Audio::LADSPA::Buffer;
 use 5.006;
 use Carp;
 
-our $VERSION = sprintf("%d.%03d", '$Name: v0_015-2005-01-05 $' =~ /(\d+)_(\d+)/,0,0);
+our $VERSION = sprintf("%d.%03d", '$Name: v0_016-2006-05-22 $' =~ /(\d+)_(\d+)/,0,0);
 
 our @LIBRARIES;	    # will store the list of found libraries as Perl class names
 our @PLUGINS;	    # will store the names of all loaded plugins as Perl class names
@@ -226,9 +226,6 @@ Audio::LADSPA::Library classes
 For more information about the LADSPA API, and how to obtain more plugins, see 
 http://www.ladspa.org/
 
-The website for these modules is located at:
-http://www.hortus-mechanicus.net/perl/
-
 =head1 THANKS TO
 
 =over 4
@@ -239,7 +236,7 @@ http://www.hortus-mechanicus.net/perl/
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright (C) 2003 - 2004 Joost Diepenmaat <joost AT hortus-mechanicus.net>
+Copyright (C) 2003 - 2005 Joost Diepenmaat <jdiepen AT cpan.org>
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

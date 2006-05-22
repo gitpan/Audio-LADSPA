@@ -1,13 +1,13 @@
 #!/usr/bin/perl -w
 use strict;
 
-our $VERSION = sprintf("%d.%03d", '$Name: v0_015-2005-01-05 $' =~ /(\d+)_(\d+)/,0,0);
-
+our $VERSION = sprintf("%d.%03d", '$Name: v0_016-2006-05-22 $' =~ /(\d+)_(\d+)/,0,0);
 
 warn <<GPL unless -f 'Makefile';
+----------------------------------------------------------------
 Audio::LADSPA v$VERSION
 A collection of perl modules for interfacing with LADSPA plugins
-Copyright (C) 2003  Joost Diepenmaat.
+Copyright (C) 2003 - 2005 Joost Diepenmaat.
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -24,65 +24,71 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 See the COPYING file for more information.
-
+----------------------------------------------------------------
 GPL
 use ExtUtils::MakeMaker;
 use Config;
 
-unless($ENV{LADSPA_PATH}) {
-    warn <<WARN;
-No LADSPA_PATH environment variable found, the Audio::LADSPA
-modules assume '/usr/lib/ladspa:/usr/local/lib/ladspa', see
-the README file for more information.
-WARN
-    $ENV{LADSPA_PATH} = '/usr/lib/ladspa:/usr/local/lib/ladspa';
-}
-else {
-    my $found = 0;
-    for (split/:/,$ENV{LADSPA_PATH}) {
-	if (-f "$_/delay.$Config{so}") {
-	    $found = 1;
-	    last;
-	}
-    }
-    unless ($found) {
-	warn <<EOW;
-------------------------------------------------------------
-        the ladspa_sdk plugin "delay.$Config{so}" cannot be found
-------------------------------------------------------------
- The tests specifically need the plugins from the
- ladspa_sdk package, with LADSPA_PATH pointing to the
- directory where they are installed.
 
- Please correct your LADSPA_PATH and/or download and 
- install the sdk from from http://www.ladspa.org/
+$ENV{LADSPA_PATH} ||= "/usr/local/lib/ladspa:/usr/lib/ladspa";
 
- Alternatively, you can skip the tests, but these modules
- are of no use without at least SOME plugins installed.
 
- Proceed at your own risk. 
-                                                The author.
-------------------------------------------------------------
-EOW
-     sleep 2;
+my $found = 0;
+for (split/:/,$ENV{LADSPA_PATH}) {
+    if (-f "$_/delay.$Config{so}") {
+        $found = 1;
+        last;
     }
 }
 
+unless ($found) {
+	my $continue = prompt(
+qq(the ladspa_sdk plugin "delay.$Config{so}" cannot be found in
+LADSPA_PATH: "$ENV{LADSPA_PATH}"
+
+The tests specifically need the plugins from the ladspa_sdk
+package, with the LADSPA_PATH environment variable pointing 
+to the directory where they are installed.
+
+Please correct your LADSPA_PATH and/or download and  install
+the SDK from from http://www.ladspa.org/
+
+If you want, you can proceed without the ladspa_sdk package
+installed, but most of the tests will  be skipped.
+
+Do you want to proceed? y/n),"y");
+    if ($continue !~ /^y/i) {
+        exit;
+    }
+}
+
+my $play_audio = 1;
+if (! eval { require Audio::Play; } ) {
+    $play_audio = prompt(
+"No Audio::Play module was found on your system. Without it, 
+we can't do audio output. If you want to test audio output,
+answer yes to the following question. Audio::Play will then 
+be added to the required module list. This means it will be
+installed automatically if you're using the CPAN / CPANPLUS
+modules.
+
+Do you want to test audio output (requires Audio::Play)? y/n","n");
+}
+$play_audio = $play_audio =~ /^y/i ? 1 : 0;
 
 WriteMakefile(
     'NAME'		=> 'Audio::LADSPA',
     'VERSION_FROM'	=> 'LADSPA.pm', # finds $VERSION
     'PREREQ_PM'		=> {
 	'Test::More' => 0, 
-	'Audio::Play' => 1.000, 
-	'Audio::Data' => 1.000,
+    ( $play_audio ?	('Audio::Play' => 1.000, 'Audio::Data' => 1.000) : ()),
 	'Graph' => 0.5,         # NEW interface for graph
 	'Scalar::Util' => 0, 
 	'Data::Uniqid' => 0,
     }, # e.g., Module::Name => 1.i
     
     ($] >= 5.005 ?    ## Add these new keywords supported since 5.005
-       (AUTHOR     => 'Joost Diepenmaat <joost AT hortus-mechanicus.net>') : ()),
+       (AUTHOR     => 'Joost Diepenmaat <jdiepen AT cpan.org>') : ()),
     'EXE_FILES'		=> ['eg/pluginfo'],
     'OPTIMIZE'		=> '-O',
 );

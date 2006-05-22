@@ -22,7 +22,7 @@
 package Audio::LADSPA::Buffer;
 use strict;
 use base qw(DynaLoader);
-our $VERSION = sprintf("%d.%03d", '$Name: v0_015-2005-01-05 $' =~ /(\d+)_(\d+)/,0,0);
+our $VERSION = sprintf("%d.%03d", '$Name: v0_016-2006-05-22 $' =~ /(\d+)_(\d+)/,0,0);
 use Carp qw(croak);
 
 sub get_words {

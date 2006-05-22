@@ -5,6 +5,5 @@ use ExtUtils::MakeMaker;
 WriteMakefile(
     'NAME'		=> 'Audio::LADSPA::Plugin::Play',
     'VERSION_FROM'	=> 'Play.pm', # finds $VERSION
-    'PREREQ_PM'		=> {'Test::More' => 0, 'Audio::Play' => 1 }, # e.g., Module::Name => 1.i
 );
 

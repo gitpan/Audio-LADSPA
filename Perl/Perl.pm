@@ -22,7 +22,7 @@ use strict;
 use Audio::LADSPA;
 use Audio::LADSPA::Library;
 our @ISA = qw(Audio::LADSPA::Plugin);
-our $VERSION = sprintf("%d.%03d", '$Name: v0_015-2005-01-05 $' =~ /(\d+)_(\d+)/,0,0);
+our $VERSION = sprintf("%d.%03d", '$Name: v0_016-2006-05-22 $' =~ /(\d+)_(\d+)/,0,0);
 use Carp;
 use Scalar::Util qw(weaken);
 
@@ -103,9 +103,14 @@ sub port2index {
     my ($self,$name) = @_;
     croak "Port name/index undefined" unless defined $name;
     if ($name =~ /\D/) {
-	for ( 0 .. $self->port_count -1 ) {
-	    return $_ if $self->port_name($_) eq $name;
-	}
+        if ($self->port_count > 0) {
+#            warn "get index for $name - port_count = ".$self->port_count;
+            for ( 0 .. $self->port_count -1 ) {
+#                warn "test $_";
+                return $_ if $self->port_name($_) eq $name;
+#                warn "that isn't it..";
+            }
+        }
         croak "No such port $name";
     }
     return $name;
@@ -176,7 +181,7 @@ L<Audio::LADSPA::Plugin::Play> - an implementation of a Perl based ladspa plugin
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright (C) 2003 Joost Diepenmaat <joost AT hortus-mechanicus.net>
+Copyright (C) 2003 Joost Diepenmaat <jdiepen@cpan.org>
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

@@ -1,10 +1,15 @@
 0.016 -
+ Some changes to improve automatic builds and tests:
+ * Default build now skips tests if the SDK libraries can't be
+   found
+ * Default build skips playing audio if Audio::Play isn't 
+   installed
+ * Documentation updates.
+
+0.015 -
  * Audio::LADSPA::Network now works with new (0.5) Graph module
  * Removed user querying at end of tests so the tests can be run
    without user intervention
- * Some small additions to the docs
-
-0.015 -
  * Some additions to Audio::LADSPA::UserGuide
 
 0.014 -
