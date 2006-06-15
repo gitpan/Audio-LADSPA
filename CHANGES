@@ -1,3 +1,18 @@
+0.018 -
+ * Networks are now subclasses of Class::Publisher instead of
+   Class::Observable.
+
+0.017 
+
+ * NOT RELEASED due to bugs in Class::Observable, see
+   http://rt.cpan.org/Public/Bug/Display.html?id=19507
+ * Audio::LADSPA::Network is now a subclass of Class::Observable 
+ * Added sample_rate and buffer_size methods to Audio::LADSPA::Network
+ * Audio::LADSPA will now only load the first version of any given
+   library it finds in $ENV{LADSPA_PATH}. (this used to throw a 
+   pretty useless exception).
+ * Upgraded ppport.h to the version shipped with perl 5.8.8
+
 0.016 -
  Some changes to improve automatic builds and tests:
  * Default build now skips tests if the SDK libraries can't be

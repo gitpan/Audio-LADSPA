@@ -1,7 +1,7 @@
 #!/usr/bin/perl -w
 use strict;
 
-our $VERSION = sprintf("%d.%03d", '$Name: v0_016-2006-05-22 $' =~ /(\d+)_(\d+)/,0,0);
+our $VERSION = sprintf("%d.%03d", '$Name: v0_018-2006-06-15b $' =~ /(\d+)_(\d+)/,0,0);
 
 warn <<GPL unless -f 'Makefile';
 ----------------------------------------------------------------
@@ -81,6 +81,7 @@ WriteMakefile(
     'VERSION_FROM'	=> 'LADSPA.pm', # finds $VERSION
     'PREREQ_PM'		=> {
 	'Test::More' => 0, 
+    'Class::Publisher' => 0,
     ( $play_audio ?	('Audio::Play' => 1.000, 'Audio::Data' => 1.000) : ()),
 	'Graph' => 0.5,         # NEW interface for graph
 	'Scalar::Util' => 0, 

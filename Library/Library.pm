@@ -21,7 +21,7 @@
 
 package Audio::LADSPA::Library;
 use strict;
-our $VERSION = sprintf("%d.%03d", '$Name: v0_016-2006-05-22 $' =~ /(\d+)_(\d+)/,0,0);
+our $VERSION = sprintf("%d.%03d", '$Name: v0_018-2006-06-15b $' =~ /(\d+)_(\d+)/,0,0);
 no strict 'refs';
 
 sub plugins {

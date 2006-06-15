@@ -22,7 +22,7 @@ use strict;
 use Audio::LADSPA::Plugin::Perl;
 use Audio::Play ();
 our @ISA = qw(Audio::LADSPA::Plugin::Perl);
-our $VERSION = sprintf("%d.%03d", '$Name: v0_016-2006-05-22 $' =~ /(\d+)_(\d+)/,0,0);
+our $VERSION = sprintf("%d.%03d", '$Name: v0_018-2006-06-15b $' =~ /(\d+)_(\d+)/,0,0);
 use Carp;
 
 sub init {

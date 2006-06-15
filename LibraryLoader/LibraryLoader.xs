@@ -84,22 +84,22 @@ void load_lib_to_package(SV* self, const char* filename, const char* package) {
     
     void* handle = dlopen(filename, RTLD_NOW);
     if (handle == NULL) {
-	croak("Error loading %s into package %s: %s",filename,package,dlerror());
+        croak("Error loading %s into package %s: %s",filename,package,dlerror());
     }
 
     dlerror();
     descF = (LADSPA_Descriptor_Function)dlsym(handle, "ladspa_descriptor");
     if (!descF) {
-    	const char * pcError = dlerror();
-	if (pcError) {
-	croak( 
-	      "Unable to find ladspa_descriptor() function in library: %s."
-	      "Are you sure this is a LADSPA plugin file?", 
-	      pcError);
-	}
+        const char * pcError = dlerror();
+        if (pcError) {
+            croak( 
+                    "Unable to find ladspa_descriptor() function in library: %s."
+                    "Are you sure this is a LADSPA plugin file?", 
+                    pcError);
+        }
     }
 
-
+    
     isa_array = (AV*) get_av(form("%s::ISA",package),1); /* @package::ISA */
     av_push(isa_array,newSVpvn("Audio::LADSPA::Library",22));
 
@@ -122,11 +122,12 @@ void load_lib_to_package(SV* self, const char* filename, const char* package) {
     SvREADONLY_on(store_descriptor);
 
     /* create plugin classes, and store their names in @library_package::PLUGINS */
-       
+    
     plugins_array = get_av(form("%s::PLUGINS",package),1);
     i = 0;
     while (desc = descF(i++), desc != NULL) {
-	av_push(plugins_array,setup_plugin(desc,filename));
+    	av_push(plugins_array,setup_plugin(desc,filename));
+    
     }
 }
 
@@ -162,4 +163,4 @@ unload(self, package)
     const char* package
 
 
-
+    

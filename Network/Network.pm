@@ -19,27 +19,34 @@
 
 package Audio::LADSPA::Network;
 use strict;
-our $VERSION = sprintf("%d.%03d", '$Name: v0_016-2006-05-22 $' =~ /(\d+)_(\d+)/,0,0);
+our $VERSION = sprintf("%d.%03d", '$Name: v0_018-2006-06-15b $' =~ /(\d+)_(\d+)/,0,0);
 use Audio::LADSPA;
 use Graph::Directed;
 use Carp;
+use base qw(Class::Publisher);
 
 sub new {
     my ($class,%args) = @_;
     my $self = bless { 
-	graph => Graph::Directed->new,
-	sample_rate => $args{sample_rate} || 44100,
-	buffer_size => $args{buffer_size} || 1024, 
-	run_order => undef, 
-	plugin_by_uniqid => {},
-	%args,
+        graph => Graph::Directed->new,
+        sample_rate => $args{sample_rate} || 44100,
+        buffer_size => $args{buffer_size} || 1024, 
+        run_order => undef, 
+        plugin_by_uniqid => {},
+        %args,
     },$class;
+    $self->notify_subscribers("new",$self);
     return $self;
 }
 
 sub sample_rate {
     my $self = shift;
     return $self->{sample_rate};
+}
+
+sub buffer_size {
+    my $self = shift;
+    return $self->{buffer_size};
 }
 
 sub _make_plugin {
@@ -71,6 +78,7 @@ sub add_plugin {
 	$self->_connect_default($plugin,$_) unless $plugin->get_buffer($_);
     }
     $self->{plugin_by_uniqid}->{$plugin->get_uniqid} = $plugin;
+    $self->notify_subscribers("add_plugin",$plugin);
     return $plugin; 
 }
 
@@ -95,6 +103,7 @@ sub add_buffer {
     }
     $self->graph->add_vertex("$buff");
     $self->graph->set_vertex_attribute("$buff",'buffer',$buff);
+    $self->notify_subscribers("add_buffer",$buff);
     return $buff;
 }
 
@@ -129,7 +138,8 @@ sub DESTROY {
     # be freed (?) I think I already fixed that, but anyway... 
     
     for ($self->plugins()) {
-       $_->disconnect_all();
+#       $_->disconnect_all();
+       $self->delete($_);
     }
 
     $self->{plugin_by_uniqid} = {};
@@ -138,11 +148,13 @@ sub DESTROY {
     # this is not really needed, but it make for a nice place
     # for things to break down, if I mix up the reference counts again.
     delete $self->{graph};
+    $self->delete_all_subscribers();
 }
 
 sub run {
     my ($self,$samples) = @_;
     croak "Cannot run for more than buffer_size samples" if ($samples > $self->{buffer_size});
+    croak "Invalid sample number: $samples" if $samples < 1;
     for ($self->plugins) {
         $_->run($samples);
     }
@@ -171,13 +183,16 @@ sub connect {
     # note that connecting the other way around will create
     # problems when connecting an audio-out to crontrol-in port
     my $buffer = $from_plug->get_buffer($from_port);
-    return $to_plug->connect($to_port => $buffer);
+    my $ret = $to_plug->connect($to_port => $buffer);
+    $self->notify_subscribers("connect",$from_plug,$from_port,$to_plug,$to_port) if $ret;
+    return $ret;
 }
 
 sub disconnect {
     my ($self,$plug,$port) = @_;
     $plug->disconnect($port);
     $self->_connect_default($plug,$port);
+    $self->notify_subscribers("disconnect",$plug,$port);
 }
 
 sub cb_connect {
@@ -264,7 +279,11 @@ sub delete {
     my ($self,$plugin) = @_;
     $self->graph->delete_vertex($plugin);
     $plugin->disconnect_all();
+    for ($plugin->ports) {
+        $self->notify_subscribers("disconnect",$plugin,$_);
+    }
     delete $self->{plugin_by_uniqid}->{$plugin->get_uniqid};
+    $self->notify_subscribers("delete",$plugin);
 }
 
 sub dump {
@@ -356,6 +375,7 @@ sub plugin_by_uniqid {
 }
 
 
+
 1;
 
 __END__
@@ -370,6 +390,12 @@ Audio::LADSPA::Network - Semi automatic connection of Audio::LADSPA::* objects
 
     use Audio::LADSPA::Network;
     use Audio::LADSPA::Plugin::Play;
+    sub subscriber {
+        my ($object,$event) = @_;
+        $object = ref($object);
+        print "Recieved event '$event' from $object\n";
+    }
+    Audio::LADSPA::Network->add_subscriber('*',\&subscriber);
 
     my $net = Audio::LADSPA::Network->new();
     my $sine = $net->add_plugin( label => 'sine_fcac' );
@@ -397,7 +423,11 @@ Audio::LADSPA::Network - Semi automatic connection of Audio::LADSPA::* objects
 
 This module makes it easier to create connecting Audio::LADSPA::Plugin
 objects. It automatically keeps the sampling frequencies correct for all plugins,
-adds control and audio buffers to unconnected plugins, detects illegal connections etc.
+adds control and audio buffers to unconnected plugins and prevents illegal connections.
+
+It also implements an observable-type  API via Class::Publisher that can be used to
+recieve notifications of events in the network. Amongst other things, this makes
+writing loosely coupled GUIs fairly straightforward.
 
 =head1 CONSTRUCTOR
 
@@ -497,6 +527,54 @@ run() the plugin after disconnecting. See also $network->delete().
 Completely remove the plugin from the network. This will also disconnect
 the plugin from all buffers that it currently holds. 
 
+=head1 OBSERVABLE / PUBLISHER API
+
+Audio::LADSPA::Network inherits the observable methods from 
+L<Class::Publisher>. You can subscribe to network instances or the Network class.
+Subscribers can be subroutines, objects or classes.
+
+See also L<Class::Publisher>.
+
+=head1 OBSERVABLE ACTIONS
+
+The following actions can be sent to subscribers.
+
+=head2 add_plugin
+
+action = "add_plugin", args = $plugin
+
+Called after successful addition of $plugin to the network.
+
+=head2 add_buffer
+
+action = "add_buffer", args = $buffer
+
+Called after successful addition of $buffer to the network.
+
+=head2 connect
+
+action = "connect", args = $from_plug, $from_port, $to_plug, $to_port
+
+Called after successful connection is made from $from_plug to $to_plug
+
+=head2 disconnect
+
+action = "disconnect", args = $plugin, $port
+
+Called after $plugin's $port is disconnected.
+
+=head2 delete
+
+action = "delete", args = $plugin
+
+$plugin was deleted from the network.
+
+=head2 new
+
+action = "new", args = $network
+
+A new Audio::LADSPA::Network was created.
+
 =head1 ADDITIONAL METHODS
 
 =head2 add_buffer
@@ -568,6 +646,7 @@ on an existing $network), it tries to import the network into the existing one.
 
 If a network is loaded from a dump, the plugins uniqids are restored from
 the dump.
+
 
 =head1 SEE ALSO
 
