@@ -1,3 +1,7 @@
+0.019 -
+ * Fixed the tests - there was a dependency on a LADSPA plugin
+   that isn't part of the ladspa dev 
+
 0.018 -
  * Networks are now subclasses of Class::Publisher instead of
    Class::Observable.

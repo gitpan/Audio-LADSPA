@@ -19,7 +19,7 @@
 
 package Audio::LADSPA::Network;
 use strict;
-our $VERSION = sprintf("%d.%03d", '$Name: v0_018-2006-06-15b $' =~ /(\d+)_(\d+)/,0,0);
+our $VERSION = 0.019;
 use Audio::LADSPA;
 use Graph::Directed;
 use Carp;

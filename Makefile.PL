@@ -1,13 +1,13 @@
 #!/usr/bin/perl -w
 use strict;
 
-our $VERSION = sprintf("%d.%03d", '$Name: v0_018-2006-06-15b $' =~ /(\d+)_(\d+)/,0,0);
+our $VERSION = 0.019;
 
 warn <<GPL unless -f 'Makefile';
 ----------------------------------------------------------------
 Audio::LADSPA v$VERSION
 A collection of perl modules for interfacing with LADSPA plugins
-Copyright (C) 2003 - 2005 Joost Diepenmaat.
+Copyright (C) 2003 - 2007 Joost Diepenmaat.
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

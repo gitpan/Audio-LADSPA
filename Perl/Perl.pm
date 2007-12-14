@@ -22,7 +22,7 @@ use strict;
 use Audio::LADSPA;
 use Audio::LADSPA::Library;
 our @ISA = qw(Audio::LADSPA::Plugin);
-our $VERSION = sprintf("%d.%03d", '$Name: v0_018-2006-06-15b $' =~ /(\d+)_(\d+)/,0,0);
+our $VERSION = 0.019;
 use Carp;
 use Scalar::Util qw(weaken);
 

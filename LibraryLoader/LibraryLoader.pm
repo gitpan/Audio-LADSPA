@@ -24,7 +24,7 @@ use strict;
 use base qw(DynaLoader);
 use Carp;
 
-our $VERSION = sprintf("%d.%03d", '$Name: v0_018-2006-06-15b $' =~ /(\d+)_(\d+)/,0,0);
+our $VERSION = 0.019;
 use Audio::LADSPA::Library;
 use Audio::LADSPA::Plugin::XS;
 use Config;

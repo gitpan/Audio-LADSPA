@@ -20,7 +20,7 @@ SKIP: {
 
           ok(Audio::LADSPA->plugin( label => 'delay_5s' )->isa("Audio::LADSPA::Plugin"),"Plugin inheritance");
 
-          ok(Audio::LADSPA->plugin( name => 'Echo Delay Line (Maximum Delay 5s)')->isa("Audio::LADSPA::Plugin"),"Find by name");
+          ok(Audio::LADSPA->plugin( name => 'Simple Delay Line')->isa("Audio::LADSPA::Plugin"),"Find by name");
 }
 
 
