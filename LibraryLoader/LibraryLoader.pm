@@ -24,7 +24,7 @@ use strict;
 use base qw(DynaLoader);
 use Carp;
 
-our $VERSION = 0.019;
+our $VERSION = "0.020";
 use Audio::LADSPA::Library;
 use Audio::LADSPA::Plugin::XS;
 use Config;

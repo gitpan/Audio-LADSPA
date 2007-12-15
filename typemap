@@ -59,7 +59,7 @@ T_PTROBJ_SPECIAL_RO
 LADSPA_Data_T
 	$var = (LADSPA_Data)SvNV($arg)
 
-
+const char *            T_PV
 
 OUTPUT
 T_PTROBJ_SPECIAL
@@ -68,4 +68,5 @@ T_PTROBJ_SPECIAL
 
 LADSPA_Data_T
 	sv_setnv($arg, (NV)$var);
+
 

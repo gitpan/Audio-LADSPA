@@ -19,7 +19,7 @@
 
 package Audio::LADSPA::Network;
 use strict;
-our $VERSION = 0.019;
+our $VERSION = "0.020";
 use Audio::LADSPA;
 use Graph::Directed;
 use Carp;

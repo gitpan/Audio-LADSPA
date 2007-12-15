@@ -1,7 +1,7 @@
 #!/usr/bin/perl -w
 use strict;
 
-our $VERSION = 0.019;
+our $VERSION = "0.020";
 
 warn <<GPL unless -f 'Makefile';
 ----------------------------------------------------------------

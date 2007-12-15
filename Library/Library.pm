@@ -21,7 +21,7 @@
 
 package Audio::LADSPA::Library;
 use strict;
-our $VERSION = 0.019;
+our $VERSION = "0.020";
 no strict 'refs';
 
 sub plugins {

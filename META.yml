@@ -1,7 +1,7 @@
 # http://module-build.sourceforge.net/META-spec.html
 #XXXXXXX This is a prototype!!!  It will change in the future!!! XXXXX#
 name:         Audio-LADSPA
-version:      0.019
+version:      0.020
 version_from: LADSPA.pm
 installdirs:  site
 requires:

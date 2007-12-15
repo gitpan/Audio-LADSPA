@@ -1,3 +1,9 @@
+0.020 -
+ * Testing if the path used to find plugins is actually contains
+   readable directories should work better now.
+ * Added const char* to typemap, which may or may not fix the
+   problems building these modules on 5.6.x perls.
+
 0.019 -
  * Fixed the tests - there was a dependency on a LADSPA plugin
    that isn't part of the ladspa dev 
