@@ -22,7 +22,7 @@
 package Audio::LADSPA::Buffer;
 use strict;
 use base qw(DynaLoader);
-our $VERSION = "0.020";
+our $VERSION = "0.021";
 use Carp qw(croak);
 
 sub get_words {

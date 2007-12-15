@@ -20,7 +20,7 @@
 package Audio::LADSPA::Plugin::XS;
 use strict;
 use base qw(DynaLoader Audio::LADSPA::Plugin);
-our $VERSION = "0.020";
+our $VERSION = "0.021";
 use Carp;
 
 __PACKAGE__->bootstrap($VERSION);

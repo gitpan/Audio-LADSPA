@@ -19,7 +19,7 @@
 
 package Audio::LADSPA::Plugin;
 use strict;
-our $VERSION = "0.020";
+our $VERSION = "0.021";
 use Carp;
 use constant ABOVE_ZERO => 0.00000000000000000000000000000000000000000000000000000001;
 use Data::Uniqid qw();

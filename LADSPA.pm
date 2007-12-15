@@ -24,7 +24,7 @@ use Audio::LADSPA::Buffer;
 use 5.006;
 use Carp;
 
-our $VERSION = "0.020";
+our $VERSION = "0.021";
 
 our @LIBRARIES;	    # will store the list of found libraries as Perl class names
 our @PLUGINS;	    # will store the names of all loaded plugins as Perl class names

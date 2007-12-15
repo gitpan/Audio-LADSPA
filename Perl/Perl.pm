@@ -22,7 +22,7 @@ use strict;
 use Audio::LADSPA;
 use Audio::LADSPA::Library;
 our @ISA = qw(Audio::LADSPA::Plugin);
-our $VERSION = "0.020";
+our $VERSION = "0.021";
 use Carp;
 use Scalar::Util qw(weaken);
 

@@ -20,7 +20,7 @@
 package Audio::LADSPA::Plugin::Sequencer4;
 use strict;
 use base qw(Audio::LADSPA::Plugin::Perl);
-our $VERSION = "0.020";
+our $VERSION = "0.021";
 use Carp;
 
 

@@ -1,5 +1,9 @@
+0.021 - 
+ * LibraryLoader fix at 0.020 wasn't actually released. It's
+   in this release instead.
+
 0.020 -
- * Testing if the path used to find plugins is actually contains
+ * Testing if the path used to find plugins actually contains
    readable directories should work better now.
  * Added const char* to typemap, which may or may not fix the
    problems building these modules on 5.6.x perls.

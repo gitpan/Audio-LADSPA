@@ -22,7 +22,7 @@ use strict;
 use Audio::LADSPA::Plugin::Perl;
 use Audio::Play ();
 our @ISA = qw(Audio::LADSPA::Plugin::Perl);
-our $VERSION = "0.020";
+our $VERSION = "0.021";
 use Carp;
 
 sub init {

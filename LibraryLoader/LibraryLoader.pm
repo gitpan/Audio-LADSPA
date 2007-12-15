@@ -24,7 +24,7 @@ use strict;
 use base qw(DynaLoader);
 use Carp;
 
-our $VERSION = "0.020";
+our $VERSION = "0.021";
 use Audio::LADSPA::Library;
 use Audio::LADSPA::Plugin::XS;
 use Config;
@@ -46,7 +46,7 @@ sub find_libraries {
 
 sub find_libraries_in_dir {
     my $dir = shift;
-      opendir D,$dir;
+      opendir D,$dir or return;
       my @files = map "$dir/$_",grep /\.$Config{so}$/, readdir(D);
       closedir D;
       @files;
